@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1761374644650,
+      "tag": "0000_wandering_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1761375371066,
+      "tag": "0001_init-wkedrive",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761384026928,
+      "tag": "0002_create-org-api",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1761470134854,
+      "tag": "0003_get-orgs-api",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1761483450332,
+      "tag": "0004_organization-invitations",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1761485679294,
+      "tag": "0005_rename-get-orgs",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1761486297119,
+      "tag": "0006_create-org-api-with-permission-check",
+      "breakpoints": true
+    }
+  ]
+}

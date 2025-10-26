@@ -1,27 +1,39 @@
-import { authClient } from "$lib/auth-client";
-import { type Actions, fail, redirect } from "@sveltejs/kit";
+import { s3Client } from '$lib/s3-client';
+import { type Actions, error } from '@sveltejs/kit';
+import { fail, superValidate } from 'sveltekit-superforms';
+import { valibot } from 'sveltekit-superforms/adapters';
+import type { PageServerLoad } from './$types';
+import { uploadFileSchema } from './schema';
+import { env } from '$env/dynamic/private';
 
-// export const load: PageServerLoad = async ({ locals }) => {
-//   if (locals.session) {
-//     return redirect(302, "/dashboard");
-//   }
-// };
+export const load: PageServerLoad = async () => {
+	return {
+		uploadFileForm: await superValidate(valibot(uploadFileSchema)),
+	};
+};
 
 export const actions = {
-  signInWithGoogle: async (event) => {
-    console.log("Initiating Google sign-in...");
-    const resp = await authClient.signIn.social({
-      provider: "google",
-      fetchOptions: { credentials: "include" },
-      callbackURL: event.url.origin,
-    });
+	uploadFile: async ({ request, locals }) => {
+		if (!locals.session) {
+			error(401, 'Unauthorized');
+		}
 
-    console.log("Google sign-in response:", resp);
+		const form = await superValidate(request, valibot(uploadFileSchema));
+		if (!form.valid) {
+			return fail(401, { form });
+		}
 
-    if (resp.data?.url) {
-      throw redirect(303, resp.data.url);
-    }
+		try {
+			for (const file of form.data.files) {
+				const buffer = Buffer.from(await file.arrayBuffer());
+				await s3Client.putObject(env.S3_BUCKET, file.name, buffer);
+			}
+		} catch (error) {
+			console.error('Error uploading file:', error);
+			return fail(500, { form });
+		}
 
-    return fail(500, { error: "Failed to initiate Google sign-in." });
-  },
+		form.data.files = [];
+		return { form };
+	},
 } satisfies Actions;

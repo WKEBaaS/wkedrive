@@ -1,0 +1,46 @@
+{
+  "id": "ed9ef25f-4ee8-4003-97b1-2fcf40e9c981",
+  "prevId": "d11a0465-30ab-4365-9b27-19e203e2e16f",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.schema_migrations": {
+      "name": "schema_migrations",
+      "schema": "",
+      "columns": {
+        "version": {
+          "name": "version",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "schema_migrations_version_not_null": {
+          "name": "schema_migrations_version_not_null",
+          "value": "NOT NULL version"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  },
+  "internal": {
+    "tables": {}
+  }
+}
