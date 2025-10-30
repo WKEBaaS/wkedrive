@@ -7,6 +7,7 @@
 	import { valibotClient } from 'sveltekit-superforms/adapters';
 	import { uploadFileSchema } from './schema.js';
 	import { toast } from 'svelte-sonner';
+	import { resolve } from '$app/paths';
 
 	let { data } = $props();
 
@@ -63,4 +64,5 @@
 		<div class="mb-1 font-bold">Debug:</div>
 		<SuperDebug data={$formData} />
 	</form>
+	<Button class="mt-5" href={resolve('/dashboard/organizations')}>Go to Org.</Button>
 </div>

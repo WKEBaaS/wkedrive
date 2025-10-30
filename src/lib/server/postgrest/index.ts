@@ -1,7 +1,6 @@
 import { error } from '@sveltejs/kit';
 
-// 1. 定義 Client Class
-class PostgrestClient {
+export class PostgrestClient {
 	private baseURL: URL;
 
 	constructor(baseURL: string | URL) {
@@ -87,11 +86,3 @@ class PostgrestClient {
 		});
 	}
 }
-
-// 2. 從環境變數讀取你的 PostgREST URL
-//    (請在 .env 檔案中設定 POSTGREST_URL)
-import { POSTGREST_URL } from '$env/static/private';
-
-// 3. 建立並匯出「單一實例」(Singleton Pattern)
-//    這能確保你的應用程式中只有一個 PostgREST Client，效能最好
-export const postgrestClient = new PostgrestClient(POSTGREST_URL);
