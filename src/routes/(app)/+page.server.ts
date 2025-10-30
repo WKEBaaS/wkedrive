@@ -1,10 +1,10 @@
+import { env } from '$env/dynamic/private';
 import { s3Client } from '$lib/s3-client';
 import { type Actions, error } from '@sveltejs/kit';
 import { fail, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import type { PageServerLoad } from './$types';
 import { uploadFileSchema } from './schema';
-import { env } from '$env/dynamic/private';
 
 export const load: PageServerLoad = async () => {
 	return {

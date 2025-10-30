@@ -50,6 +50,27 @@
       "when": 1761486297119,
       "tag": "0006_create-org-api-with-permission-check",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1761550051190,
+      "tag": "0007_users-to-organizations",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1761639877080,
+      "tag": "0008_fix-get-orgs-missing-return",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1761641153483,
+      "tag": "0009_get-orgs-api-result-add-columns",
+      "breakpoints": true
     }
   ]
 }

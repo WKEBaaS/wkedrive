@@ -5,7 +5,7 @@ CREATE TYPE invitation_status AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED', 'EXPIR
 
 CREATE TABLE IF NOT EXISTS dbo.organization_invitations
 (
-    id                    uuid              NOT NULL,
+    id                    uuid              NOT NULL DEFAULT uuidv7(),
     organization_class_id VARCHAR(21),
     invitee_id            uuid,
     email                 VARCHAR(255),
