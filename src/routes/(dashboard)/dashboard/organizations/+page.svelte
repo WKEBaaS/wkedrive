@@ -27,7 +27,7 @@
 						</p>
 					</Card.Content>
 					<Card.Footer>
-						<Button href={resolve(`/dashboard/organizations/${org.class_id}`)} class="mt-2">View Organization</Button>
+						<Button href={resolve(`/dashboard/org/${org.class_id}`)} class="mt-2">View Organization</Button>
 					</Card.Footer>
 				</Card.Root>
 			{/each}

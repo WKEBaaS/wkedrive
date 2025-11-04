@@ -5,10 +5,7 @@
 	import { authClient } from '$lib/auth-client';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { Icon } from '@lucide/svelte';
-	import Database from '@lucide/svelte/icons/database';
-	import Logout from '@lucide/svelte/icons/log-out';
-	import Settings from '@lucide/svelte/icons/settings';
-	import UserPen from '@lucide/svelte/icons/user-pen';
+	import { Building2, LogOut, Settings } from '@lucide/svelte';
 
 	type Item = {
 		title: string;
@@ -19,17 +16,17 @@
 	const mainItems = [
 		{
 			title: 'Organizations',
-			url: resolve('/organizations'),
-			icon: Database,
+			url: resolve('/dashboard/organizations'),
+			icon: Building2,
 		},
 	] satisfies Item[];
 
 	const accountItems = [
-		{
-			title: 'Profile',
-			url: '#',
-			icon: UserPen,
-		},
+		// 	{
+		// 		title: 'Profile',
+		// 		url: '#',
+		// 		icon: UserPen,
+		// 	},
 		{
 			title: 'Settings',
 			url: '#',
@@ -60,7 +57,7 @@
 			</Sidebar.GroupContent>
 		</Sidebar.Group>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>{m.account()}</Sidebar.GroupLabel>
+			<Sidebar.GroupLabel>Account</Sidebar.GroupLabel>
 			<Sidebar.GroupContent class="group-data-[collapsible=icon]:hidden">
 				<Sidebar.Menu>
 					{#each accountItems as item (item.title)}
@@ -89,8 +86,8 @@
 								goto(resolve('/'));
 							}}
 						>
-							<Logout />
-							{m.logout()}
+							<LogOut />
+							<span>Logout</span>
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
 				</Sidebar.Menu>

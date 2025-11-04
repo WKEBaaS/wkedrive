@@ -1,16 +1,11 @@
-import { PostgrestClient } from './postgrest';
 import { env } from '$env/dynamic/private';
-import type { Organization } from './postgrest/schemas/organizations';
+import { PostgrestClient } from './postgrest';
 
 class API {
-	private postgrestClient: PostgrestClient;
+	public postgrest: PostgrestClient;
 
-	constructor(postgrestClient: PostgrestClient) {
-		this.postgrestClient = postgrestClient;
-	}
-
-	async getOrganizations(jwt: string) {
-		return this.postgrestClient.get<Organization[]>('/api/rest/rpc/get_organizations', jwt);
+	constructor(postgrest: PostgrestClient) {
+		this.postgrest = postgrest;
 	}
 }
 

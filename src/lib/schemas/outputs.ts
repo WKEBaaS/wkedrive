@@ -8,4 +8,16 @@ export const organizationSchema = v.object({
 	updated_at: v.string(),
 });
 
+export const organizationMemberSchema = v.object({
+	id: v.string(),
+	name: v.string(),
+	email: v.string(),
+	rank: v.number(),
+	joined_at: v.pipe(
+		v.string(),
+		v.isoTimestamp(),
+	),
+});
+
 export type Organization = v.InferInput<typeof organizationSchema>;
+export type OrganizationMember = v.InferInput<typeof organizationMemberSchema>;

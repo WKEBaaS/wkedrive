@@ -71,6 +71,27 @@
       "when": 1761641153483,
       "tag": "0009_get-orgs-api-result-add-columns",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1762248335047,
+      "tag": "0010_in-org-api",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1762266051328,
+      "tag": "0011_get-org-api",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1762267443911,
+      "tag": "0012_members-api",
+      "breakpoints": true
     }
   ]
 }

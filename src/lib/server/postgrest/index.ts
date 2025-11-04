@@ -9,14 +9,35 @@ export class PostgrestClient {
 
 	/**
 	 * 核心的 fetch 方法，處理認證和錯誤
+	 * @param endpoint - 基礎 API 路徑 (e.g., "/posts")
+	 * @param jwt - 用戶的 JWT
+	 * @param options - 標準的 RequestInit 選項
+	 * @param params - (可選) 要附加到 URL 的查詢參數
 	 */
-	private async fetchWithAuth(
+	private async fetchWithAuth<T>(
 		endpoint: string,
 		jwt: string | undefined,
 		options: RequestInit = {},
-	) {
-		// 確保 endpoint 是相對路徑
-		const url = new URL(endpoint.replace(/^\//, ''), this.baseURL);
+		params?: Record<string, string>,
+	): Promise<T> {
+		let urlString = endpoint;
+
+		// 處理 URL 查詢參數
+		if (params && Object.keys(params).length > 0) {
+			const searchParams = new URLSearchParams(params);
+			const queryString = searchParams.toString();
+
+			// 檢查 endpoint 是否已包含 '?'
+			if (urlString.includes('?')) {
+				urlString += '&' + queryString;
+			} else {
+				urlString += '?' + queryString;
+			}
+		}
+
+		// 確保 endpoint 是相對路徑，並與 baseURL 組合
+		// 使用已經處理過 params 的 urlString
+		const url = new URL(urlString.replace(/^\//, ''), this.baseURL);
 
 		const headers = new Headers(options.headers || {});
 
@@ -39,16 +60,16 @@ export class PostgrestClient {
 			const errorData = await response.json().catch(() => ({}));
 			console.error('PostgREST Error:', errorData);
 
-			// 拋出 SvelteKit 的 HTTPError，這會自動回傳正確的 status code
+			// 拋出 SvelteKit 的 HTTPError
 			throw error(response.status, errorData.message || 'API request failed');
 		}
 
 		if (response.status === 204 || response.status === 202) {
 			// No Content or Accepted
-			return null;
+			return null as T;
 		}
 
-		// 成功，回傳 JSON
+		// 成功，回傳 JSON (類型為 T)
 		return response.json();
 	}
 
@@ -58,11 +79,45 @@ export class PostgrestClient {
 	 * 執行 GET 請求
 	 * @param endpoint - 例如 "/organizations"
 	 * @param jwt - 用戶的 JWT
+	 * @param params - (可選) URL 查詢參數
 	 */
-	public get<T>(endpoint: string, jwt: string): Promise<T> {
-		return this.fetchWithAuth(endpoint, jwt, {
-			method: 'GET',
-		});
+	public get<T>(endpoint: string, jwt: string, params?: Record<string, string>): Promise<T> {
+		// 直接將 params 傳遞給 fetchWithAuth
+		return this.fetchWithAuth<T>(
+			endpoint,
+			jwt,
+			{ method: 'GET' },
+			params,
+		);
+	}
+
+	/**
+	 * 執行 GET 請求並只取回第一筆資料
+	 * @param endpoint - 例如 "/posts"
+	 * @param jwt - 用戶的 JWT
+	 * @param params - URL 查詢參數 (會自動被覆蓋加上 limit=1)
+	 */
+	public async getFirst<T>(endpoint: string, jwt: string, params?: Record<string, string>): Promise<T> {
+		// 仍然需要在這裡準備 allParams，這是這個方法的特定業務邏輯
+		const allParams = {
+			...params,
+			limit: '1',
+		};
+
+		// 假設回傳的是 T 類型的陣列 (e.g., Post[])
+		const data = await this.fetchWithAuth<T[]>(
+			endpoint,
+			jwt,
+			{ method: 'GET' },
+			allParams,
+		);
+
+		// 增加 Array.isArray 檢查，使程式更健壯
+		if (Array.isArray(data) && data.length > 0) {
+			return data[0]; // 回傳 T 類型的單一物件 (e.g., Post)
+		} else {
+			throw error(404, 'No data found');
+		}
 	}
 
 	/**
