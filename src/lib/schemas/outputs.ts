@@ -17,6 +17,7 @@ export const organizationMemberSchema = v.object({
 		v.string(),
 		v.isoTimestamp(),
 	),
+	role: v.string(),
 });
 
 export type Organization = v.InferInput<typeof organizationSchema>;

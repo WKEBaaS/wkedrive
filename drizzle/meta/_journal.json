@@ -92,6 +92,13 @@
       "when": 1762267443911,
       "tag": "0012_members-api",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1762581628940,
+      "tag": "0013_join-org-when-create",
+      "breakpoints": true
     }
   ]
 }

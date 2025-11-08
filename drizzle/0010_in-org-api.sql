@@ -12,7 +12,7 @@ BEGIN
     END IF;
 
     -- 3. 檢查 admin
-    IF CURRENT_USER = 'admin' THEN
+    IF CURRENT_USER = 'app_admin' THEN
         RETURN TRUE; -- 直接返回 boolean
     END IF;
 
