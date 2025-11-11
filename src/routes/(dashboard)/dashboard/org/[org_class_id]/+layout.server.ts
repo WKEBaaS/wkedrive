@@ -1,7 +1,7 @@
 import { authClient } from '$lib/auth-client';
-import type { Organization } from '$lib/schemas';
+import type { Organization, OrganizationMember } from '$lib/schemas';
 import { api } from '$lib/server';
-import { GET_ORGANIZATION } from '$lib/server/postgrest/endpoints';
+import { GET_ORGANIZATION, GET_ORGANIZATION_MEMBERS } from '$lib/server/postgrest/endpoints';
 import { error, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 
@@ -21,10 +21,14 @@ export const load: LayoutServerLoad = async (event) => {
 
 	try {
 		const org = await api.postgrest.getFirst<Organization>(GET_ORGANIZATION, data.token, {
-			org_class_id: event.params.id,
+			p_org_class_id: event.params.org_class_id,
+		});
+		const members = await api.postgrest.get<OrganizationMember[]>(GET_ORGANIZATION_MEMBERS, data.token, {
+			p_org_class_id: event.params.org_class_id,
 		});
 		return {
-			org: org,
+			org,
+			members,
 		};
 	} catch (err) {
 		console.error('Error verifying organization membership:', err);

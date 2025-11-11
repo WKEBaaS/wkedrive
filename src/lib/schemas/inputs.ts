@@ -12,4 +12,14 @@ export const createOrganizationSchema = v.object({
 	)),
 });
 
+export const addMembersToGroupSchema = v.object({
+	p_org_class_id: v.string(),
+	p_group_id: v.string(),
+	p_user_ids: v.array(v.pipe(
+		v.string(),
+		v.uuid(),
+	)),
+});
+
 export type CreateOrganizationPayload = v.InferInput<typeof createOrganizationSchema>;
+export type AddMembersToGroupPayload = v.InferInput<typeof addMembersToGroupSchema>;

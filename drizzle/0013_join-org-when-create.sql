@@ -4,7 +4,7 @@
 ALTER TABLE dbo.user_organizations
     ADD COLUMN "role" TEXT NOT NULL DEFAULT 'Member';
 
-CREATE FUNCTION create_organization(name TEXT, description TEXT) RETURNS VOID
+CREATE OR REPLACE FUNCTION create_organization(name TEXT, description TEXT) RETURNS VOID
     LANGUAGE plpgsql
 AS
 $$
@@ -31,6 +31,10 @@ BEGIN
             v_user_id
          )
     INTO v_new_org_class_id;
+
+    -- full permissions for owner
+    INSERT INTO dbo.permissions(class_id, role_type, role_id, permission_bits)
+    VALUES (v_new_org_class_id, 'USER', v_user_id, 32767);
 
     PERFORM dbo.fn_insert_class(
             v_new_org_class_id,
@@ -73,8 +77,8 @@ $$;
 --     rank      INTEGER,
 --     joined_at timestamptz
 -- );
-alter table api.org_members_result
-    add column if not exists "role" TEXT;
+ALTER TABLE api.org_members_result
+    ADD COLUMN IF NOT EXISTS "role" TEXT;
 
 CREATE OR REPLACE FUNCTION api.get_organization_members(org_class_id VARCHAR(21)) RETURNS SETOF api.org_members_result
 AS

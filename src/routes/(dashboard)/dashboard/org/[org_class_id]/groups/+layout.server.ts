@@ -1,11 +1,11 @@
 import { authClient } from '$lib/auth-client';
-import type { OrganizationMember } from '$lib/schemas';
+import type { OrganizationGroup } from '$lib/schemas';
 import { api } from '$lib/server';
-import { GET_ORGANIZATION_MEMBERS } from '$lib/server/postgrest/endpoints';
+import { GET_ORGANIZATION_GROUPS } from '$lib/server/postgrest/endpoints';
 import { error, redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { LayoutServerLoad } from './$types';
 
-export const load: PageServerLoad = async (event) => {
+export const load: LayoutServerLoad = async (event) => {
 	if (!event.locals.session) {
 		redirect(302, '/');
 	}
@@ -20,11 +20,12 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	try {
-		const members = await api.postgrest.get<OrganizationMember[]>(GET_ORGANIZATION_MEMBERS, data.token, {
-			org_class_id: event.params.id,
+		const groups = await api.postgrest.get<OrganizationGroup[]>(GET_ORGANIZATION_GROUPS, data.token, {
+			p_org_class_id: event.params.org_class_id,
 		});
+		console.log('Fetched groups:', groups);
 		return {
-			members,
+			groups,
 		};
 	} catch (err) {
 		console.error('Error fetching organization membership:', err);

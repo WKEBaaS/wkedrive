@@ -5,7 +5,7 @@
 	import { HardDrive, House, Users } from '@lucide/svelte';
 	import type { ComponentProps } from 'svelte';
 
-	if (!page.params.id) {
+	if (!page.params.org_class_id) {
 		throw new Error('Organization ID is required in the URL parameters.');
 	}
 
@@ -13,12 +13,17 @@
 	const items = [
 		{
 			title: 'Overview',
-			url: resolve('/(dashboard)/dashboard/org/[id]', { id: page.params.id }),
+			url: resolve('/(dashboard)/dashboard/org/[org_class_id]', { org_class_id: page.params.org_class_id }),
 			icon: House,
 		},
 		{
 			title: 'Members',
-			url: resolve('/(dashboard)/dashboard/org/[id]/members', { id: page.params.id }),
+			url: resolve('/(dashboard)/dashboard/org/[org_class_id]/members', { org_class_id: page.params.org_class_id }),
+			icon: Users,
+		},
+		{
+			title: 'Groups',
+			url: resolve('/(dashboard)/dashboard/org/[org_class_id]/groups', { org_class_id: page.params.org_class_id }),
 			icon: Users,
 		},
 	];
@@ -50,6 +55,7 @@
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
+									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 									<a href={item.url} {...props}>
 										<item.icon />
 										<span>{item.title}</span>
