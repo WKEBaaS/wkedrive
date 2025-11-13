@@ -23,7 +23,6 @@ export const load: LayoutServerLoad = async (event) => {
 		const groups = await api.postgrest.get<OrganizationGroup[]>(GET_ORGANIZATION_GROUPS, data.token, {
 			p_org_class_id: event.params.org_class_id,
 		});
-		console.log('Fetched groups:', groups);
 		return {
 			groups,
 		};

@@ -14,6 +14,8 @@
 				return 'Organizations';
 			case '/dashboard/organizations/new':
 				return 'New Organization';
+			default:
+				return 'Dashboard';
 		}
 	});
 </script>

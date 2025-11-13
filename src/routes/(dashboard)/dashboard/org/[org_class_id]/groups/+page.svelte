@@ -2,21 +2,26 @@
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
+	import { createOrganizationGroupSchema } from '$lib/schemas/inputs.js';
 	import dayjs from 'dayjs';
-	import { getOrgHeaderStore } from '../(components)/org-header/index.js';
+	import { superForm } from 'sveltekit-superforms';
+	import { valibotClient } from 'sveltekit-superforms/adapters';
+	import { CreateGroupForm } from './(components)/create-group/index.js';
 
 	let { data } = $props();
-	const store = getOrgHeaderStore();
-	store.setNavItems([
-		{
-			name: 'Groups',
-			href: resolve('/(dashboard)/dashboard/org/[org_class_id]/groups', { org_class_id: data.org.class_id }),
-		},
-	]);
+	const createOrganizationGroupForm = superForm(data.createOrganizationGroupForm, {
+		id: 'create-organization-group-form',
+		validators: valibotClient(createOrganizationGroupSchema),
+		dataType: 'json',
+		delayMs: 100,
+	});
 </script>
 
 <div class="space-y-6 p-4">
-	<div class="text-2xl font-bold">Organization Groups</div>
+	<div class="flex items-center justify-between">
+		<div class="text-2xl font-bold">Organization Groups</div>
+		<CreateGroupForm members={data.members} form={createOrganizationGroupForm} />
+	</div>
 
 	<div class="rounded-md border">
 		<Table.Root>

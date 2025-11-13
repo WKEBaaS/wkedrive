@@ -4,10 +4,6 @@ ALTER TABLE auth.groups
     ADD CONSTRAINT uq_auth_group_name UNIQUE (name),
     ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) NOT NULL DEFAULT '';
 
-INSERT INTO dbo.permission_enum(name, bit)
-VALUES ('org-manage-group-members', 128);
-
-
 CREATE TABLE IF NOT EXISTS dbo.organization_groups
 (
     organization_class_id VARCHAR(21) NOT NULL,
@@ -149,7 +145,7 @@ BEGIN
     WHERE c.id = p_org_class_id;
 
     SELECT class_id, has
-    FROM api.check_class_permission_by_name_path(v_group_name_path, 'org-manage-group-members')
+    FROM api.check_class_permission_by_name_path(v_group_name_path, 'insert')
     INTO v_group_class_id, v_has_permission;
     IF NOT v_has_permission THEN
         RAISE SQLSTATE 'PT403' USING
@@ -189,7 +185,7 @@ BEGIN
              JOIN auth.groups g ON g.id = p_group_id
     WHERE c.id = p_org_class_id;
     SELECT class_id, has
-    FROM api.check_class_permission_by_name_path(v_group_name_path, 'org-manage-group-members')
+    FROM api.check_class_permission_by_name_path(v_group_name_path, 'delete')
     INTO v_group_class_id, v_has_permission;
     IF NOT v_has_permission THEN
         RAISE SQLSTATE 'PT403' USING

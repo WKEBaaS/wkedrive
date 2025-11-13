@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DashboardHeader from './(components)/dashboard-header.svelte';
+	import { DashboardHeader } from './(components)/dashboard-header/index.js';
 	import DashboardSidebar from './(components)/dashboard-sidebar.svelte';
 
 	let { children } = $props();

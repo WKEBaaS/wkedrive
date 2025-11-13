@@ -1,33 +1,35 @@
 <script lang="ts">
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import type { OrganizationGroupMember } from '$lib/schemas';
 	import { CheckIcon, ChevronsUpDownIcon, XIcon } from '@lucide/svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import { Badge } from '$lib/components/ui/badge/index.js';
 
 	interface MemberSelectorProps {
 		members: OrganizationGroupMember[];
-		selected?: SvelteMap<string, OrganizationGroupMember>;
-		name?: string;
+		// Selected member IDs
+		selected?: string[];
 	}
 
-	let { members, name, selected = $bindable(new SvelteMap()) }: MemberSelectorProps = $props();
+	let { members, selected = $bindable([]) }: MemberSelectorProps = $props();
+	let selectedMap = new SvelteMap<string, OrganizationGroupMember>();
 
-	let searchQuery = $state('');
 	let toggleMember = (member: OrganizationGroupMember) => {
-		if (selected.has(member.id)) {
-			selected.delete(member.id);
+		if (selectedMap.has(member.id)) {
+			selectedMap.delete(member.id);
 		} else {
-			selected.set(member.id, member);
+			selectedMap.set(member.id, member);
 		}
 	};
+	$effect(() => {
+		selected = Array.from(selectedMap.keys());
+	});
 </script>
 
-<input type="hidden" {name} value={Array.from(selected.keys())} />
 <Popover.Root>
-	<Popover.Trigger>
+	<Popover.Trigger class="w-full">
 		<Button
 			type="button"
 			variant="outline"
@@ -35,10 +37,10 @@
 			class="w-full justify-between min-h-[40px] h-auto bg-transparent"
 		>
 			<div class="flex gap-1 flex-wrap">
-				{#if selected.size === 0}
+				{#if selectedMap.size === 0}
 					<span class="text-muted-foreground">Select members...</span>
 				{:else}
-					{#each Array.from(selected.values()) as member (member.id)}
+					{#each Array.from(selectedMap.values()) as member (member.id)}
 						<Badge variant="secondary">
 							{member.name}
 							<button
@@ -59,15 +61,12 @@
 	</Popover.Trigger>
 	<Popover.Content class="w-[var(--bits-popover-anchor-width)] p-0">
 		<Command.Root>
-			<Command.Input
-				placeholder="Search by name or email..."
-				bind:value={searchQuery}
-			/>
+			<Command.Input placeholder="Search by name or email..." />
 			<Command.Empty>No members found.</Command.Empty>
 			<Command.Group>
 				{#each members as member (member.id)}
 					<Command.Item onSelect={() => toggleMember(member)}>
-						<CheckIcon class={`mr-2 h-4 w-4 ${selected.has(member.id) ? 'opacity-100' : 'opacity-0'}`} />
+						<CheckIcon class={`mr-2 h-4 w-4 ${selectedMap.has(member.id) ? 'opacity-100' : 'opacity-0'}`} />
 						<div class="flex-1">
 							<span class="font-medium">{member.name}</span>
 							<span class="text-sm text-muted-foreground">{member.email}</span>

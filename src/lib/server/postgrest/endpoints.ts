@@ -10,3 +10,5 @@ export const GET_ORGANIZATION_MEMBERS = '/api/rest/rpc/get_organization_members'
 export const GET_ORGANIZATION_GROUPS = '/api/rest/rpc/get_organization_groups';
 export const CREATE_ORGANIZATION_GROUP = '/api/rest/rpc/create_organization_group';
 export const GET_ORGANIZATION_GROUP_MEMBERS = '/api/rest/rpc/get_organization_group_members';
+export const ADD_MEMBERS_TO_GROUP = '/api/rest/rpc/add_members_to_group';
+export const REMOVE_MEMBERS_FROM_GROUP = '/api/rest/rpc/remove_members_from_group';
