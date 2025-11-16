@@ -12,13 +12,13 @@ export class PostgrestClient {
 	/**
 	 * 核心的 fetch 方法，處理認證和錯誤
 	 * @param endpoint - 基礎 API 路徑 (e.g., "/posts")
-	 * @param jwt - 用戶的 JWT
+	 * @param token - 用戶的 JWT
 	 * @param options - 標準的 RequestInit 選項
 	 * @param params - (可選) 要附加到 URL 的查詢參數
 	 */
 	private async fetchWithAuth<T>(
 		endpoint: string,
-		jwt: string | undefined,
+		token: string | null,
 		options: RequestInit = {},
 		params?: Record<string, string>,
 	): Promise<T> {
@@ -44,8 +44,8 @@ export class PostgrestClient {
 		const headers = new Headers(options.headers || {});
 
 		// 注入 PostgREST 需要的 JWT 認證
-		if (jwt) {
-			headers.set('Authorization', `Bearer ${jwt}`);
+		if (token) {
+			headers.set('Authorization', `Bearer ${token}`);
 		}
 
 		// PostgREST 偏好 'application/json'
@@ -102,14 +102,14 @@ export class PostgrestClient {
 	/**
 	 * 執行 GET 請求
 	 * @param endpoint - 例如 "/organizations"
-	 * @param jwt - 用戶的 JWT
+	 * @param token - (可選) 用戶的 JWT
 	 * @param params - (可選) URL 查詢參數
 	 */
-	public get<T>(endpoint: string, jwt: string, params?: Record<string, string>): Promise<T> {
+	public get<T>(endpoint: string, token: string | null, params?: Record<string, string>): Promise<T> {
 		// 直接將 params 傳遞給 fetchWithAuth
 		return this.fetchWithAuth<T>(
 			endpoint,
-			jwt,
+			token,
 			{ method: 'GET' },
 			params,
 		);
@@ -118,10 +118,10 @@ export class PostgrestClient {
 	/**
 	 * 執行 GET 請求並只取回第一筆資料
 	 * @param endpoint - 例如 "/posts"
-	 * @param jwt - 用戶的 JWT
+	 * @param token - 用戶的 JWT
 	 * @param params - URL 查詢參數 (會自動被覆蓋加上 limit=1)
 	 */
-	public async getFirst<T>(endpoint: string, jwt: string, params?: Record<string, string>): Promise<T> {
+	public async getFirst<T>(endpoint: string, token: string | null, params?: Record<string, string>): Promise<T> {
 		// 仍然需要在這裡準備 allParams，這是這個方法的特定業務邏輯
 		const allParams = {
 			...params,
@@ -131,7 +131,7 @@ export class PostgrestClient {
 		// 假設回傳的是 T 類型的陣列 (e.g., Post[])
 		const data = await this.fetchWithAuth<T[]>(
 			endpoint,
-			jwt,
+			token,
 			{ method: 'GET' },
 			allParams,
 		);
@@ -147,11 +147,11 @@ export class PostgrestClient {
 	/**
 	 * 執行 POST 請求
 	 * @param endpoint - 例如 "/posts"
-	 * @param jwt - 用戶的 JWT
+	 * @param token - 用戶的 JWT
 	 * @param data - 要傳送的 JS 物件
 	 */
-	public post<T>(endpoint: string, jwt: string, data: object): Promise<T> {
-		return this.fetchWithAuth(endpoint, jwt, {
+	public post<T>(endpoint: string, token: string | null, data: object): Promise<T> {
+		return this.fetchWithAuth(endpoint, token, {
 			method: 'POST',
 			body: JSON.stringify(data),
 		});

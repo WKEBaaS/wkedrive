@@ -1,8 +1,7 @@
-import { authClient } from '$lib/auth-client';
 import { addMembersToGroupSchema, removeMembersFromGroupSchema } from '$lib/schemas';
 import { api } from '$lib/server';
 import { ADD_MEMBERS_TO_GROUP, REMOVE_MEMBERS_FROM_GROUP } from '$lib/server/postgrest/endpoints';
-import { error, fail } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
