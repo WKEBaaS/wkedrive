@@ -35,10 +35,7 @@ export const actions = {
 		}
 
 		try {
-			await api.postgrest.post(CREATE_ORGANIZATION, data.token, {
-				p_name: form.data.name,
-				p_description: form.data.description,
-			});
+			await api.postgrest.post(CREATE_ORGANIZATION, data.token, form.data);
 		} catch (err) {
 			console.error('Error creating organization:', err);
 			throw error(500, 'Failed to create organization');

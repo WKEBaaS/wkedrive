@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { OrgMemberSelector } from '$lib/components/org-member-selector/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -17,8 +17,8 @@
 </script>
 
 <Dialog.Root>
-	<Dialog.Trigger>
-		<Button variant="outline">Create Group</Button>
+	<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
+		Create Group
 	</Dialog.Trigger>
 	<Dialog.Content>
 		<Dialog.Header>

@@ -1,4 +1,6 @@
 import { error } from '@sveltejs/kit';
+import * as v from 'valibot';
+import { POSTGREST_ERROR_TYPE, postgrestErrorSchema } from './error';
 
 export class PostgrestClient {
 	private baseURL: URL;
@@ -57,11 +59,33 @@ export class PostgrestClient {
 
 		if (!response.ok) {
 			// 嘗試解析 PostgREST 的錯誤訊息
-			const errorData = await response.json().catch(() => ({}));
-			console.error('PostgREST Error:', errorData);
+			const errorData = await response.json();
+			const parsed = await v.safeParseAsync(postgrestErrorSchema, errorData);
 
-			// 拋出 SvelteKit 的 HTTPError
-			throw error(response.status, errorData.message || 'API request failed');
+			if (!parsed.success) {
+				console.error('PostgREST Error Parsing Failed:', parsed.issues);
+				throw error(500, 'Internal Server Error');
+			}
+
+			// Start with "PT" mean custom HTTP status code return in Transaction
+			if (parsed.output.code.startsWith('PT')) {
+				throw error(response.status, {
+					type: POSTGREST_ERROR_TYPE,
+					message: parsed.output.message,
+					details: parsed.output.details,
+					hint: parsed.output.hint,
+					status: response.status,
+				});
+			}
+
+			console.error('PostgrestClient internal error:', {
+				message: parsed.output.message,
+				details: parsed.output.details,
+				hint: parsed.output.hint,
+				code: parsed.output.code,
+			});
+
+			throw error(500, 'Internal Server Error');
 		}
 
 		if (response.status === 204 || response.status === 202) {
@@ -141,3 +165,5 @@ export class PostgrestClient {
 		});
 	}
 }
+
+export { POSTGREST_ERROR_TYPE, PostgrestError } from './error';

@@ -1,12 +1,12 @@
 import * as v from 'valibot';
 
 export const createOrganizationSchema = v.object({
-	name: v.pipe(
+	p_name: v.pipe(
 		v.string(),
 		v.minLength(3),
 		v.maxLength(50),
 	),
-	description: v.optional(v.pipe(
+	p_description: v.optional(v.pipe(
 		v.string(),
 		v.maxLength(200),
 	)),
@@ -23,10 +23,19 @@ export const createOrganizationGroupSchema = v.object({
 		v.string(),
 		v.maxLength(200),
 	)),
-	p_init_user_ids: v.optional(v.array(v.pipe(
+	p_init_user_ids: v.array(v.pipe(
 		v.string(),
 		v.uuid(),
-	))),
+	)),
+});
+
+export const deleteOrganizationSchema = v.object({
+	p_org_class_id: v.string(),
+});
+
+export const deleteOrganizationGroupSchema = v.object({
+	p_org_class_id: v.string(),
+	p_group_id: v.string(),
 });
 
 export const addMembersToGroupSchema = v.object({
@@ -49,5 +58,7 @@ export const removeMembersFromGroupSchema = v.object({
 
 export type CreateOrganizationPayload = v.InferInput<typeof createOrganizationSchema>;
 export type CreateOrganizationGroupPayload = v.InferInput<typeof createOrganizationGroupSchema>;
+export type DeleteOrganizationPayload = v.InferInput<typeof deleteOrganizationSchema>;
+export type DeleteOrganizationGroupPayload = v.InferInput<typeof deleteOrganizationGroupSchema>;
 export type AddMembersToGroupPayload = v.InferInput<typeof addMembersToGroupSchema>;
 export type RemoveMembersFromGroupPayload = v.InferInput<typeof removeMembersFromGroupSchema>;

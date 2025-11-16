@@ -2,7 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { HardDrive, House, Users } from '@lucide/svelte';
+	import { HardDriveIcon, HouseIcon, Settings2Icon, UsersIcon } from '@lucide/svelte';
 	import type { ComponentProps } from 'svelte';
 
 	if (!page.params.org_class_id) {
@@ -14,17 +14,24 @@
 		{
 			title: 'Overview',
 			url: resolve('/(dashboard)/dashboard/org/[org_class_id]', { org_class_id: page.params.org_class_id }),
-			icon: House,
+			icon: HouseIcon,
 		},
 		{
 			title: 'Members',
 			url: resolve('/(dashboard)/dashboard/org/[org_class_id]/members', { org_class_id: page.params.org_class_id }),
-			icon: Users,
+			icon: UsersIcon,
 		},
 		{
 			title: 'Groups',
 			url: resolve('/(dashboard)/dashboard/org/[org_class_id]/groups', { org_class_id: page.params.org_class_id }),
-			icon: Users,
+			icon: UsersIcon,
+		},
+		{
+			title: 'Settings',
+			url: resolve('/(dashboard)/dashboard/org/[org_class_id]/settings', {
+				org_class_id: page.params.org_class_id,
+			}),
+			icon: Settings2Icon,
 		},
 	];
 
@@ -38,7 +45,7 @@
 				<Sidebar.MenuButton class="data-[slot=sidebar-menu-button]:!p-1.5">
 					{#snippet child({ props })}
 						<a href={resolve('/dashboard/organizations')} {...props}>
-							<HardDrive class="" />
+							<HardDriveIcon class="" />
 							<span class="text-base font-semibold">Organizations</span>
 						</a>
 					{/snippet}

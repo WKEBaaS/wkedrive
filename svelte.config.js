@@ -14,6 +14,7 @@ const config = {
 		adapter: adapter(),
 		alias: {
 			'$drizzle': './drizzle',
+			'$src': './src',
 		},
 	},
 };

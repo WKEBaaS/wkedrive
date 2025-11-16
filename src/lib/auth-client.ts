@@ -7,3 +7,5 @@ export const authClient = createAuthClient({
 	credentials: 'include',
 	plugins: [jwtClient()],
 });
+
+export type AuthClient = typeof authClient;

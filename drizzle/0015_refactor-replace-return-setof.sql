@@ -106,12 +106,16 @@ DECLARE
     v_user_id           uuid := auth.jwt() ->> 'sub';
     v_new_org_class_id  VARCHAR(21);
 BEGIN
-    SELECT id INTO v_root_org_class_id FROM dbo.classes WHERE name_path = '/組織';
-    IF NOT api.check_class_permission(v_root_org_class_id, 'insert') THEN
+    IF CURRENT_USER = 'anon' THEN
         RAISE SQLSTATE 'PT403' USING
-            MESSAGE = 'User does not have permission to create organization',
-            HINT = 'Check your permissions.';
+            MESSAGE = 'Anonymous users cannot create organizations',
+            HINT = 'Please log in to create an organization.';
     END IF;
+
+    SELECT id
+    INTO v_root_org_class_id
+    FROM dbo.classes
+    WHERE name_path = '/組織';
 
     SELECT id
     FROM dbo.fn_insert_class(
@@ -136,7 +140,7 @@ BEGIN
             NULL,
             'Groups',
             NULL,
-            NULL
+            v_user_id
             );
     PERFORM dbo.fn_insert_class(
             v_new_org_class_id,
@@ -145,7 +149,7 @@ BEGIN
             NULL,
             'Members',
             NULL,
-            NULL
+            v_user_id
             );
     PERFORM dbo.fn_insert_class(
             v_new_org_class_id,
@@ -154,7 +158,7 @@ BEGIN
             NULL,
             'S3',
             NULL,
-            NULL
+            v_user_id
             );
 
     INSERT INTO dbo.user_organizations (user_id, organization_class_id, role)

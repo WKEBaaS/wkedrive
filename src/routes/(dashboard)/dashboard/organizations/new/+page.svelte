@@ -4,7 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { createOrganizationSchema } from '$lib/schemas';
 	import { toast } from 'svelte-sonner';
-	import SuperDebug, { superForm } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
 
 	let { data } = $props();
@@ -15,7 +15,7 @@
 			toast.error('Error', { description: result.error.message });
 		},
 		onResult: ({ result }) => {
-			if (result.type === 'success') {
+			if (result.type === 'redirect') {
 				toast.success('Success', { description: 'Organization created successfully' });
 			}
 		},
@@ -33,31 +33,29 @@
 			{/if}
 			<Field.Group>
 				<Field.Field>
-					<Field.Label for="name">Name</Field.Label>
+					<Field.Label for="org_name">Name</Field.Label>
 					<Input
-						id="name"
-						name="name"
-						autocomplete="off"
+						id="org_name"
+						name="p_name"
 						placeholder="Enter organization name"
-						bind:value={$form.name}
+						bind:value={$form.p_name}
 					/>
 					<Field.Description>The name of the organization.</Field.Description>
-					{#if $errors.name}
-						<Field.Error>{$errors.name}</Field.Error>
+					{#if $errors.p_name}
+						<Field.Error>{$errors.p_name}</Field.Error>
 					{/if}
 				</Field.Field>
 				<Field.Field>
-					<Field.Label for="description">Description</Field.Label>
+					<Field.Label for="org_description">Description</Field.Label>
 					<Input
-						id="description"
-						name="description"
-						autocomplete="off"
+						id="org_description"
+						name="p_description"
 						placeholder="Enter description"
-						bind:value={$form.description}
+						bind:value={$form.p_description}
 					/>
 					<Field.Description>A brief description of the organization.</Field.Description>
-					{#if $errors.description}
-						<Field.Error>{$errors.description}</Field.Error>
+					{#if $errors.p_description}
+						<Field.Error>{$errors.p_description}</Field.Error>
 					{/if}
 				</Field.Field>
 				<Field.Field orientation="horizontal">
@@ -67,5 +65,4 @@
 			</Field.Group>
 		</Field.Set>
 	</form>
-	<SuperDebug data={$form} />
 </div>
