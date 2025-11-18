@@ -15,6 +15,7 @@ const config = {
 		alias: {
 			'$drizzle': './drizzle',
 			'$src': './src',
+			'$routes': './src/routes',
 		},
 	},
 };

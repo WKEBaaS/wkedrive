@@ -27,6 +27,11 @@
 			icon: UsersIcon,
 		},
 		{
+			title: 'Storage',
+			url: resolve('/(dashboard)/dashboard/org/[org_class_id]/storage', { org_class_id: page.params.org_class_id }),
+			icon: HardDriveIcon,
+		},
+		{
 			title: 'Settings',
 			url: resolve('/(dashboard)/dashboard/org/[org_class_id]/settings', {
 				org_class_id: page.params.org_class_id,

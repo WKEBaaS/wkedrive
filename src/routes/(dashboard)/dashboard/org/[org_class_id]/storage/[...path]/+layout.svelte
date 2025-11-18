@@ -5,8 +5,8 @@
 
 	store.setNavItems([
 		{
-			name: 'Settings',
-			href: `/dashboard/org/${data.org.class_id}/settings`,
+			name: 'Storage',
+			href: `/dashboard/org/${data.org.class_id}/storage`,
 		},
 	]);
 </script>

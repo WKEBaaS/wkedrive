@@ -29,7 +29,23 @@ export const organizationGroupSchema = v.object({
 	updated_at: v.string(),
 });
 
+export enum StorageObjectType {
+	FILE = 'file',
+	FOLDER = 'folder',
+}
+
+export const storageObjectSchema = v.object({
+	id: v.string(),
+	name: v.string(),
+	description: v.nullable(v.string()),
+	type: v.enum(StorageObjectType),
+	size: v.nullable(v.string()),
+	created_at: v.string(),
+	updated_at: v.string(),
+});
+
 export type Organization = v.InferInput<typeof organizationSchema>;
 export type OrganizationMember = v.InferInput<typeof organizationMemberSchema>;
 export type OrganizationGroup = v.InferInput<typeof organizationGroupSchema>;
 export type OrganizationGroupMember = Omit<v.InferInput<typeof organizationMemberSchema>, 'role'>;
+export type StorageObject = v.InferInput<typeof storageObjectSchema>;

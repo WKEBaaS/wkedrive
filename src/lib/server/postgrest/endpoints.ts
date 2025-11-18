@@ -14,3 +14,8 @@ export const DELETE_ORGANIZATION_GROUP = '/api/rest/rpc/delete_organization_grou
 export const GET_ORGANIZATION_GROUP_MEMBERS = '/api/rest/rpc/get_organization_group_members';
 export const ADD_MEMBERS_TO_GROUP = '/api/rest/rpc/add_members_to_group';
 export const REMOVE_MEMBERS_FROM_GROUP = '/api/rest/rpc/remove_members_from_group';
+
+// Storage Endpoints
+export const GET_STORAGE_OBJECTS = '/api/rest/rpc/get_storage_objects';
+export const CREATE_STORAGE_FOLDER = '/api/rest/rpc/create_storage_folder';
+export const CREATE_STORAGE_OBJECT = '/api/rest/rpc/create_storage_object';
