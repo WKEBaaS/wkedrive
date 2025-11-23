@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/private';
 import { error } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { POSTGREST_ERROR_TYPE, postgrestErrorSchema } from './error';
@@ -167,3 +168,4 @@ export class PostgrestClient {
 }
 
 export { POSTGREST_ERROR_TYPE, PostgrestError } from './error';
+export const postgrestClient = new PostgrestClient(env.BAAS_API_URL);

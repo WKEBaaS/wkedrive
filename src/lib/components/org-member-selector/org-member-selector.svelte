@@ -5,9 +5,10 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import type { OrganizationGroupMember } from '$lib/schemas';
 	import { CheckIcon, ChevronsUpDownIcon, XIcon } from '@lucide/svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 	import { SvelteMap } from 'svelte/reactivity';
 
-	interface MemberSelectorProps {
+	interface MemberSelectorProps extends HTMLAttributes<HTMLSelectElement> {
 		members: OrganizationGroupMember[];
 		// Selected member IDs
 		selected?: string[];
@@ -59,7 +60,7 @@
 			<ChevronsUpDownIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 		</Button>
 	</Popover.Trigger>
-	<Popover.Content class="w-[var(--bits-popover-anchor-width)] p-0">
+	<Popover.Content class="w-(--bits-popover-anchor-width) p-0">
 		<Command.Root>
 			<Command.Input placeholder="Search by name or email..." />
 			<Command.Empty>No members found.</Command.Empty>

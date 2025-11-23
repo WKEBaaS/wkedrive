@@ -17,6 +17,15 @@ const config = {
 			'$src': './src',
 			'$routes': './src/routes',
 		},
+		experimental: {
+			remoteFunctions: true,
+		},
+	},
+
+	compilerOptions: {
+		experimental: {
+			// async: true,
+		},
 	},
 };
 

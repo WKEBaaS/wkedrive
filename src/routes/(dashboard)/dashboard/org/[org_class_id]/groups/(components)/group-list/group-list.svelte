@@ -4,18 +4,16 @@
 	import { page } from '$app/state';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import type { DeleteOrganizationGroupPayload, OrganizationGroup } from '$lib/schemas';
+	import type { OrganizationGroup } from '$lib/schemas';
 	import { EllipsisVerticalIcon } from '@lucide/svelte';
 	import dayjs from 'dayjs';
 	import DeleteGroupDialog from './delete-group-dialog.svelte';
-	import type { SuperForm } from 'sveltekit-superforms';
 
 	interface GroupListProps {
 		groups: OrganizationGroup[];
-		form: SuperForm<DeleteOrganizationGroupPayload>;
 	}
 
-	let { groups, form }: GroupListProps = $props();
+	let { groups }: GroupListProps = $props();
 </script>
 
 <div class="rounded-md border">
@@ -65,7 +63,7 @@
 												Manage this group
 											</p>
 										</div>
-										<DeleteGroupDialog groupID={group.id} {form} />
+										<DeleteGroupDialog groupID={group.id} />
 									</div>
 								</Popover.Content>
 							</Popover.Root>

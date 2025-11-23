@@ -1,17 +1,14 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { buttonVariants } from '$lib/components/ui/button';
-	import { page } from '$app/state';
-	import type { SuperForm } from 'sveltekit-superforms';
-	import type { DeleteOrganizationGroupPayload } from '$src/lib/schemas';
+	import { deleteOrgGroup } from '$src/lib/remotes/index.js';
 
 	interface DeleteGroupDialogProps {
 		groupID: string;
-		form: SuperForm<DeleteOrganizationGroupPayload>;
 	}
 
-	let { groupID, form }: DeleteGroupDialogProps = $props();
-	const { enhance } = form;
+	let { groupID }: DeleteGroupDialogProps = $props();
 </script>
 
 <AlertDialog.Root>
@@ -24,9 +21,9 @@
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
-			<form method="POST" action="?/deleteOrganizationGroup" use:enhance>
-				<input type="hidden" name="p_org_class_id" value={page.params.org_class_id} />
-				<input type="hidden" name="p_group_id" value={groupID} />
+			<form {...deleteOrgGroup}>
+				<input {...deleteOrgGroup.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
+				<input {...deleteOrgGroup.fields.p_group_id.as('hidden', groupID)} />
 				<div class="mt-4 flex justify-end space-x-2">
 					<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
 					<AlertDialog.Action type="submit">Delete</AlertDialog.Action>

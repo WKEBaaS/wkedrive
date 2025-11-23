@@ -2,20 +2,19 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { PlusIcon, SearchIcon, UploadIcon } from '@lucide/svelte';
+	import { SearchIcon, UploadIcon } from '@lucide/svelte';
+	import { CreateStorageFolderDialog } from './(components)/create-storage-folder-dialog/index.js';
 	import { CurrentPath } from './(components)/current-path/index.js';
+	import { ObjectGridView, ObjectListView } from './(components)/object-list/index.js';
 	import { ViewModeSwitch } from './(components)/view-mode-switch/index.js';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { ObjectListView } from './(components)/object-list/index.js';
-	import ObjectGridView from './(components)/object-list/object-grid-view.svelte';
 
 	let { data } = $props();
-	let viewMode = $state<'list' | 'grid'>('list');
+	let viewMode: 'list' | 'grid' = $state('list');
 </script>
 
-<div class="p-2">
-	<Card.Root class="w-full max-w-6xl mx-auto shadow-md">
-		<Card.Header class="border-b">
+<div class="p-2 flex-1">
+	<Card.Root class="w-full max-w-6xl mx-auto shadow-md gap-0 h-full">
+		<Card.Header class="border-b p-4">
 			<div class="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
 				<CurrentPath />
 
@@ -29,10 +28,7 @@
 						/>
 					</div>
 
-					<Button variant="outline" size="sm">
-						<PlusIcon class="mr-2 size-4" />
-						New Folder
-					</Button>
+					<CreateStorageFolderDialog />
 
 					<Button size="sm">
 						<UploadIcon class="mr-2 size-4" />
@@ -43,11 +39,12 @@
 				</div>
 			</div>
 		</Card.Header>
-		<Card.Content>
-			<Tabs.Root value={viewMode}>
+		<Card.Content class="p-0">
+			{#if viewMode === 'list'}
 				<ObjectListView objects={data.objects} />
+			{:else if viewMode === 'grid'}
 				<ObjectGridView objects={data.objects} />
-			</Tabs.Root>
+			{/if}
 		</Card.Content>
 	</Card.Root>
 </div>

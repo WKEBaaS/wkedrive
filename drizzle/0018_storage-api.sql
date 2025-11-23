@@ -18,10 +18,16 @@ DECLARE
     v_s3_class_id    VARCHAR(21);
     v_has_permission BOOLEAN;
 BEGIN
-    SELECT FORMAT('/組織/%s/Storage/', chinese_name, TRIM(BOTH '/' FROM p_path))
+    SELECT FORMAT('/組織/%s/Storage/%s', chinese_name, TRIM(BOTH '/' FROM p_path))
     INTO v_s3_name_path
     FROM dbo.classes
     WHERE id = p_org_class_id;
+
+    IF NOT found THEN
+        RAISE SQLSTATE 'PT404' USING
+            MESSAGE = FORMAT('Organization ID %s not found', p_org_class_id),
+            HINT = 'Check the organization class ID.';
+    END IF;
 
     SELECT class_id, has
     FROM api.check_class_permission_by_name_path(v_s3_name_path, 'insert')
@@ -46,6 +52,53 @@ $$
     LANGUAGE plpgsql VOLATILE
                      SECURITY DEFINER;
 
+CREATE OR REPLACE FUNCTION api.delete_storage_objects(
+    p_org_class_id VARCHAR(21),
+    p_path TEXT,
+    p_names TEXT[]
+) RETURNS VOID AS
+$$
+    # VARIABLE_CONFLICT USE_COLUMN
+DECLARE
+    v_storage_path    TEXT;
+    v_target_name     TEXT;
+    v_target_class_id VARCHAR(21);
+BEGIN
+    SELECT FORMAT('/組織/%s/Storage/%s', chinese_name, TRIM(BOTH '/' FROM p_path))
+    INTO v_storage_path
+    FROM dbo.classes
+    WHERE id = p_org_class_id;
+
+    IF NOT found THEN
+        RAISE SQLSTATE 'PT404' USING
+            MESSAGE = FORMAT('Organization ID %s not found', p_org_class_id),
+            HINT = 'Check the organization class ID.';
+    END IF;
+
+    FOREACH v_target_name IN ARRAY p_names
+        LOOP
+            SELECT id
+            INTO v_target_class_id
+            FROM dbo.classes
+            WHERE name_path = FORMAT('%s/%s', v_storage_path, v_target_name);
+
+            -- 4. 如果找到對應的 Class，執行刪除
+            IF found THEN
+                -- (選用) 權限檢查：由於是 SECURITY DEFINER，建議檢查當前使用者是否有權限刪除該物件
+                -- 假設權限名稱為 'delete' (請依據您的 permission_enum 調整)
+                IF api.check_class_permission(v_target_class_id, 'delete') THEN
+                    -- **核心邏輯：使用指定的 helper function 進行刪除**
+                    -- 第二個參數 TRUE 代表遞迴刪除 (若該 Object 下還有子物件/繼承關係一併刪除)
+                    PERFORM dbo.fn_delete_class(v_target_class_id, TRUE);
+                ELSE
+                    RAISE WARNING 'Permission denied: Skipping deletion for %', v_target_name;
+                END IF;
+            END IF;
+        END LOOP;
+END;
+$$ LANGUAGE plpgsql VOLATILE
+                    SECURITY DEFINER;
+
 CREATE OR REPLACE FUNCTION api.create_storage_file(
     p_org_class_id VARCHAR(21),
     p_path TEXT,
@@ -62,10 +115,17 @@ DECLARE
     v_storage_class_id  VARCHAR(21);
     v_has_permission    BOOLEAN;
 BEGIN
-    SELECT FORMAT('/組織/%s/Storage/', chinese_name, TRIM(BOTH '/' FROM p_path))
+    SELECT FORMAT('/組織/%s/Storage/%s', chinese_name, TRIM(BOTH '/' FROM p_path))
     INTO v_storage_name_path
     FROM dbo.classes
     WHERE id = p_org_class_id;
+
+    IF NOT found THEN
+        RAISE SQLSTATE 'PT404' USING
+            MESSAGE = FORMAT('Organization ID %s not found', p_org_class_id),
+            HINT = 'Check the organization class ID.';
+    END IF;
+
     SELECT class_id, has
     FROM api.check_class_permission_by_name_path(v_storage_name_path, 'insert')
     INTO v_storage_class_id, v_has_permission;
@@ -106,22 +166,31 @@ CREATE OR REPLACE FUNCTION api.get_storage_objects(
                 type        TEXT,
                 created_at  timestamptz,
                 updated_at  timestamptz,
-                size        TEXT
+                size        TEXT,
+                path        TEXT
             )
 AS
 $$
     # VARIABLE_CONFLICT USE_COLUMN
 DECLARE
-    v_file_entity_id    INT := 3;
-    v_storage_name_path TEXT;
-    v_storage_class_id  VARCHAR(21);
-    v_has_read_class    BOOLEAN;
-    v_has_read_object   BOOLEAN;
+    v_file_entity_id     INT := 3;
+    v_storage_name_path  TEXT;
+    v_storage_prefix_len INT;
+    v_storage_class_id   VARCHAR(21);
+    v_has_read_class     BOOLEAN;
+    v_has_read_object    BOOLEAN;
 BEGIN
-    SELECT FORMAT('/組織/%s/Storage/%s', chinese_name, TRIM(BOTH '/' FROM p_path))
-    INTO v_storage_name_path
+    SELECT FORMAT('/組織/%s/Storage/%s', chinese_name, TRIM(BOTH '/' FROM p_path)),
+           LENGTH(FORMAT('/組織/%s/Storage', chinese_name)) + 1
+    INTO v_storage_name_path, v_storage_prefix_len
     FROM dbo.classes
     WHERE id = p_org_class_id;
+
+    IF NOT found THEN
+        RAISE SQLSTATE 'PT404' USING
+            MESSAGE = FORMAT('Organization ID %s not found', p_org_class_id),
+            HINT = 'Check the organization class ID.';
+    END IF;
 
     SELECT class_id,
            MAX(has::INT) FILTER ( WHERE permission = 'read-class' )  AS can_read_class,
@@ -152,6 +221,8 @@ BEGIN
                          WHERE i_sub.pcid = c.id -- c.id 是當前這筆 folder 的 id
                            AND c_sub.is_hidden = FALSE)
                    END                                                                  AS size
+                ,
+               SUBSTRING(c.name_path FROM v_storage_prefix_len + 1)                     AS path
         FROM dbo.inheritances i,
              dbo.classes c
         WHERE i.pcid = v_storage_class_id

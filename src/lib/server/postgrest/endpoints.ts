@@ -19,3 +19,4 @@ export const REMOVE_MEMBERS_FROM_GROUP = '/api/rest/rpc/remove_members_from_grou
 export const GET_STORAGE_OBJECTS = '/api/rest/rpc/get_storage_objects';
 export const CREATE_STORAGE_FOLDER = '/api/rest/rpc/create_storage_folder';
 export const CREATE_STORAGE_OBJECT = '/api/rest/rpc/create_storage_object';
+export const DELETE_STORAGE_OBJECTS = '/api/rest/rpc/delete_storage_objects';

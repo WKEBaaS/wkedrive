@@ -2,61 +2,30 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { createOrganizationSchema } from '$lib/schemas';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
-	import { valibotClient } from 'sveltekit-superforms/adapters';
-
-	let { data } = $props();
-
-	const { form, errors, message, enhance } = superForm(data.createOrganizationForm, {
-		validators: valibotClient(createOrganizationSchema),
-		onError: ({ result }) => {
-			toast.error('Error', { description: result.error.message });
-		},
-		onResult: ({ result }) => {
-			if (result.type === 'redirect') {
-				toast.success('Success', { description: 'Organization created successfully' });
-			}
-		},
-		delayMs: 100,
-	});
+	import { createOrganization } from '$src/lib/api';
 </script>
 
 <div class="mx-4 space-y-4">
-	<form method="POST" action="?/createOrganization" use:enhance>
+	<form {...createOrganization} oninput={() => createOrganization.validate()}>
 		<Field.Set>
 			<Field.Legend>Organization Details</Field.Legend>
 			<Field.Description>Enter the organization information.</Field.Description>
-			{#if $message}
-				<div>{$message}</div>
-			{/if}
 			<Field.Group>
 				<Field.Field>
 					<Field.Label for="org_name">Name</Field.Label>
-					<Input
-						id="org_name"
-						name="p_name"
-						placeholder="Enter organization name"
-						bind:value={$form.p_name}
-					/>
+					<Input id="org_name" {...createOrganization.fields.p_name.as('text')} />
 					<Field.Description>The name of the organization.</Field.Description>
-					{#if $errors.p_name}
-						<Field.Error>{$errors.p_name}</Field.Error>
-					{/if}
+					{#each createOrganization.fields.p_name.issues() ?? [] as issue, index (index)}
+						<Field.Error>{issue.message}</Field.Error>
+					{/each}
 				</Field.Field>
 				<Field.Field>
 					<Field.Label for="org_description">Description</Field.Label>
-					<Input
-						id="org_description"
-						name="p_description"
-						placeholder="Enter description"
-						bind:value={$form.p_description}
-					/>
+					<Input id="org_description" {...createOrganization.fields.p_description.as('text')} />
 					<Field.Description>A brief description of the organization.</Field.Description>
-					{#if $errors.p_description}
-						<Field.Error>{$errors.p_description}</Field.Error>
-					{/if}
+					{#each createOrganization.fields.p_description.issues() ?? [] as issue, index (index)}
+						<Field.Error>{issue.message}</Field.Error>
+					{/each}
 				</Field.Field>
 				<Field.Field orientation="horizontal">
 					<Button type="submit">Submit</Button>

@@ -2,15 +2,7 @@
 	import { page } from '$app/state';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { buttonVariants } from '$lib/components/ui/button';
-	import type { DeleteOrganizationPayload } from '$lib/schemas';
-	import type { SuperForm } from 'sveltekit-superforms';
-
-	interface DeleteOrgProps {
-		form: SuperForm<DeleteOrganizationPayload>;
-	}
-
-	let { form }: DeleteOrgProps = $props();
-	const { enhance } = form;
+	import { deleteOrganization } from '$src/lib/remotes';
 </script>
 
 <div class="border-b pb-6">
@@ -37,8 +29,8 @@
 				</AlertDialog.Header>
 				<AlertDialog.Footer>
 					<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-					<form method="POST" action="?/deleteOrganization" use:enhance class="inline">
-						<input type="hidden" name="p_org_class_id" value={page.params.org_class_id} />
+					<form {...deleteOrganization} class="inline">
+						<input {...deleteOrganization.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
 						<AlertDialog.Action type="submit">Delete</AlertDialog.Action>
 					</form>
 				</AlertDialog.Footer>

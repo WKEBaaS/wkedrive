@@ -127,7 +127,8 @@ BEGIN
             p_description,
             v_user_id
          )
-    INTO v_new_org_class_id;
+    INTO v_new_org_class_id
+    ;
 
     -- full permissions for owner
     INSERT INTO dbo.permissions(class_id, role_type, role_id, permission_bits)
