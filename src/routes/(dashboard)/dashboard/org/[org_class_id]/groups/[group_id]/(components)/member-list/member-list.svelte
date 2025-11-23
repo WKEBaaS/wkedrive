@@ -6,7 +6,7 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import type { OrganizationGroupMember } from '$lib/schemas';
 	import { getInitials } from '$lib/utils';
-	import { removeMembersFromGroup } from '$src/lib/remotes';
+	import { removeMembersFromGroup } from '$src/lib/remotes/index.js';
 	import { Trash2Icon } from '@lucide/svelte';
 	import dayjs from 'dayjs';
 
@@ -22,14 +22,6 @@
 			removeMembersFromGroup.fields.p_user_ids.set([]);
 		} else {
 			removeMembersFromGroup.fields.p_user_ids.set(members.map((member) => member.id));
-		}
-	};
-	const toggleMember = (id: string) => {
-		const selectedIds = removeMembersFromGroup.fields.p_user_ids.value() || [];
-		if (selectedIds.includes(id)) {
-			removeMembersFromGroup.fields.p_user_ids.set(selectedIds.filter((selectedId) => selectedId !== id));
-		} else {
-			removeMembersFromGroup.fields.p_user_ids.set([...selectedIds, id]);
 		}
 	};
 </script>
@@ -77,15 +69,11 @@
 					{#each members as member (member.id)}
 						<Table.Row>
 							<Table.Cell class="w-12 space-y-2">
-								{@const x = removeMembersFromGroup.fields.p_user_ids.as('checkbox', member.id)}
-								<Checkbox
-									name={x.name}
-									value={x.value}
-									aria-invalid={x['aria-invalid']}
-									onCheckedChange={() => {
-										toggleMember(member.id);
-									}}
-								/>
+								{@const 							{ name, value, checked } = removeMembersFromGroup.fields.p_user_ids.as(
+								'checkbox',
+								member.id,
+							)}
+								<Checkbox {name} {value} {checked} />
 							</Table.Cell>
 							<Table.Cell>
 								<div class="flex items-center gap-3">

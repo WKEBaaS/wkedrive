@@ -19,35 +19,67 @@
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime.js';
 	import ObjectEmpty from './object-empty.svelte';
+	import { deleteStorageObjects } from '$src/lib/remotes/index.js';
 
 	dayjs.extend(relativeTime);
 
 	interface ObjectListProps {
 		objects: StorageObject[];
-		selected?: string[];
 		onFileAction?: (action: string, object: StorageObject) => void;
 	}
 
-	let { objects, selected = $bindable([]), onFileAction }: ObjectListProps = $props();
+	let { objects, onFileAction }: ObjectListProps = $props();
 
-	function toggleSelection(id: string) {
-		if (selected.includes(id)) {
-			selected = selected.filter((selectedId) => selectedId !== id);
+	const toggleAll = () => {
+		const selected = deleteStorageObjects.fields.p_names.value() || [];
+		if (selected.length === objects.length) {
+			deleteStorageObjects.fields.p_names.set([]);
 		} else {
-			selected = [...selected, id];
+			deleteStorageObjects.fields.p_names.set(objects.map((object) => object.name));
 		}
-	}
+	};
+
+	const toggleSelected = (name: string) => {
+		const selected = deleteStorageObjects.fields.p_names.value() || [];
+		if (selected.includes(name)) {
+			deleteStorageObjects.fields.p_names.set(selected.filter((n) => n !== name));
+		} else {
+			deleteStorageObjects.fields.p_names.set([...selected, name]);
+		}
+	};
+
+	const isSelected = (name: string) => {
+		const selected = deleteStorageObjects.fields.p_names.value() || [];
+		return selected.includes(name);
+	};
 </script>
 
 {#if objects.length === 0}
 	<ObjectEmpty />
 {:else}
-	<div class="">
+	<form {...deleteStorageObjects}>
+		{#if deleteStorageObjects.fields.p_names.value()?.length > 0}
+			<div class="flex items-center justify-between rounded-md border bg-muted/50 p-3">
+				<span class="text-sm font-medium">
+					{deleteStorageObjects.fields.p_names.value()?.length} member{
+						deleteStorageObjects.fields.p_names.value()?.length > 1 ? 's' : ''
+					} selected
+				</span>
+				<Button type="submit" variant="destructive" size="sm">
+					<Trash2Icon class="mr-2 h-4 w-4" />
+					Delete Selected
+				</Button>
+			</div>
+		{/if}
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
 					<Table.Head class="w-12">
-						<span class="sr-only">Select</span>
+						<Checkbox
+							checked={objects.length > 0 &&
+								deleteStorageObjects.fields.p_names.value()?.length === objects.length}
+							onCheckedChange={toggleAll}
+						/>
 					</Table.Head>
 					<Table.Head>Name</Table.Head>
 					<Table.Head>Size</Table.Head>
@@ -59,12 +91,14 @@
 			</Table.Header>
 			<Table.Body>
 				{#each objects as object (object.id)}
-					<Table.Row class={selected.includes(object.id) ? 'bg-muted/50' : ''}>
+					<Table.Row class={isSelected(object.id) ? 'bg-muted/50' : ''}>
 						<Table.Cell>
+							{@const f = deleteStorageObjects.fields.p_names.as('checkbox', object.name)}
 							<Checkbox
-								checked={selected.includes(object.id)}
-								onchange={() => toggleSelection(object.id)}
-								aria-label="Select {object.name}"
+								name={f.name}
+								value={f.value}
+								checked={f.checked}
+								onCheckedChange={() => toggleSelected(object.name)}
 							/>
 						</Table.Cell>
 						<Table.Cell>
@@ -144,5 +178,5 @@
 				{/each}
 			</Table.Body>
 		</Table.Root>
-	</div>
+	</form>
 {/if}

@@ -35,7 +35,6 @@ export const addMembersToGroup = form(addMembersToGroupSchema, async (data) => {
 });
 
 export const removeMembersFromGroup = form(removeMembersFromGroupSchema, async (data) => {
-	console.log('removeMembersFromGroup data:', data);
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
 	await api.postgrest.post(REMOVE_MEMBERS_FROM_GROUP, token, data);

@@ -7,9 +7,20 @@
 	import { CurrentPath } from './(components)/current-path/index.js';
 	import { ObjectGridView, ObjectListView } from './(components)/object-list/index.js';
 	import { ViewModeSwitch } from './(components)/view-mode-switch/index.js';
+	import Fuse from 'fuse.js';
 
 	let { data } = $props();
 	let viewMode: 'list' | 'grid' = $state('list');
+	let searchQuery: string = $state('');
+
+	const fuse = new Fuse(data.objects, {
+		keys: ['name'],
+	});
+
+	const filteredObjects = $derived.by(() => {
+		if (!searchQuery) return data.objects;
+		return fuse.search(searchQuery).map((result) => result.item);
+	});
 </script>
 
 <div class="p-2 flex-1">
@@ -25,6 +36,7 @@
 							type="search"
 							placeholder="Search files..."
 							class="w-full pl-8 md:w-[200px] lg:w-[300px]"
+							bind:value={searchQuery}
 						/>
 					</div>
 
@@ -41,9 +53,9 @@
 		</Card.Header>
 		<Card.Content class="p-0">
 			{#if viewMode === 'list'}
-				<ObjectListView objects={data.objects} />
+				<ObjectListView objects={filteredObjects} />
 			{:else if viewMode === 'grid'}
-				<ObjectGridView objects={data.objects} />
+				<ObjectGridView objects={filteredObjects} />
 			{/if}
 		</Card.Content>
 	</Card.Root>

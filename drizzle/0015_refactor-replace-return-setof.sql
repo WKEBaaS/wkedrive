@@ -155,9 +155,9 @@ BEGIN
     PERFORM dbo.fn_insert_class(
             v_new_org_class_id,
             NULL,
-            'S3',
+            'Storage',
             NULL,
-            'S3',
+            'Storage',
             NULL,
             v_user_id
             );

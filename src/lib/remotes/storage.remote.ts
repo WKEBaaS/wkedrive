@@ -12,7 +12,7 @@ export const createStorageFolder = form(
 	},
 );
 
-export const deleteStorageObject = form(deleteStorageObjectsSchema, async (data) => {
+export const deleteStorageObjects = form(deleteStorageObjectsSchema, async (data) => {
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
 	return api.postgrest.post(DELETE_STORAGE_OBJECTS, token, data);
