@@ -1,32 +1,39 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { buttonVariants } from '$src/lib/components/ui/button';
 	import { Input } from '$src/lib/components/ui/input/index.js';
 	import { createStorageFolder } from '$src/lib/remotes/index.js';
 	import { PlusIcon } from '@lucide/svelte';
+	import { getStoragePathStore } from '$src/lib/stores';
 
-	const path = $derived.by(() => {
-		if (page.params.path === '' || page.params.path === undefined) {
-			return '/';
-		}
-		return page.params.path;
-	});
+	const pathStore = getStoragePathStore();
+	let open = $state(false);
 </script>
 
-<Dialog.Root>
-	<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'sm' })}>
+<AlertDialog.Root bind:open>
+	<AlertDialog.Trigger class={buttonVariants({ variant: 'outline', size: 'sm' })}>
 		<PlusIcon class="mr-2 size-4" />
 		New Folder
-	</Dialog.Trigger>
-	<Dialog.Content>
-		<Dialog.Header>
-			<Dialog.Title>Create New Folder</Dialog.Title>
-		</Dialog.Header>
-		<form {...createStorageFolder} oninput={() => createStorageFolder.validate()}>
+	</AlertDialog.Trigger>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Create New Folder</AlertDialog.Title>
+		</AlertDialog.Header>
+		<form
+			{...createStorageFolder.enhance(async ({ submit, form }) => {
+				await submit();
+				// if successful, close the dialog
+				if (createStorageFolder.result?.success) {
+					form.reset();
+					open = false;
+				}
+			})}
+			oninput={() => createStorageFolder.validate()}
+		>
 			<input {...createStorageFolder.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
-			<input {...createStorageFolder.fields.p_path.as('hidden', path)} />
+			<input {...createStorageFolder.fields.p_path.as('hidden', pathStore.getPath())} />
 			<Field.Group>
 				<Field.Set>
 					<Field.Field>
@@ -41,11 +48,11 @@
 						<Input id="storage-folder-description" {...createStorageFolder.fields.p_description.as('text')} />
 					</Field.Field>
 				</Field.Set>
-				<Field.Field orientation="horizontal">
-					<Dialog.Close type="submit" class={buttonVariants()}>Create</Dialog.Close>
-					<Dialog.Close type="button" class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
+				<Field.Field class="justify-end" orientation="horizontal">
+					<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
+					<AlertDialog.Action type="submit">Create</AlertDialog.Action>
 				</Field.Field>
 			</Field.Group>
 		</form>
-	</Dialog.Content>
-</Dialog.Root>
+	</AlertDialog.Content>
+</AlertDialog.Root>

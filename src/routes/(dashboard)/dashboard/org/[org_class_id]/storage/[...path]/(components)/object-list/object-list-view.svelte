@@ -219,7 +219,13 @@
 				Are you sure you want to delete "{objectToDelete?.name}"?
 			</AlertDialog.Description>
 			<AlertDialog.Footer>
-				<form {...deleteStorageObjects}>
+				<form
+					{...deleteStorageObjects.enhance(async ({ submit, form }) => {
+						await submit();
+						form.reset();
+						deleteObjectOpen = false;
+					})}
+				>
 					<input {...deleteStorageObjects.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
 					<input {...deleteStorageObjects.fields.p_path.as('hidden', pathStore.getPath())} />
 					{#if objectToDelete}
