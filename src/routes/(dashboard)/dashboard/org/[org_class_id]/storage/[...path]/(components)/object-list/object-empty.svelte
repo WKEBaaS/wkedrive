@@ -2,6 +2,7 @@
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ArrowUpRightIcon, FolderIcon } from '@lucide/svelte';
+	import { CreateStorageFolderDialog } from '../create-storage-folder-dialog/index.js';
 </script>
 
 <Empty.Root>
@@ -16,7 +17,7 @@
 	</Empty.Header>
 	<Empty.Content>
 		<div class="flex gap-2">
-			<Button variant="outline">New Folder</Button>
+			<CreateStorageFolderDialog />
 			<Button>Upload File</Button>
 		</div>
 	</Empty.Content>

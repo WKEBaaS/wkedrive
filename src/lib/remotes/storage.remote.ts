@@ -13,7 +13,12 @@ export const createStorageFolder = form(
 );
 
 export const deleteStorageObjects = form(deleteStorageObjectsSchema, async (data) => {
+	console.log('Deleting storage objects with data:', data);
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
-	return api.postgrest.post(DELETE_STORAGE_OBJECTS, token, data);
+	try {
+		await api.postgrest.post(DELETE_STORAGE_OBJECTS, token, data);
+	} catch (e) {
+		console.error('Error deleting storage objects:', e);
+	}
 });

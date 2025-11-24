@@ -1,9 +1,19 @@
 <script lang="ts">
-	let { children, data } = $props();
+	import { page } from '$app/state';
 	import { getOrgHeaderStore } from '$lib/components/org-header/index.js';
-	let store = getOrgHeaderStore();
+	import { getStoragePathStore, setStoragePathStore, StoragePathStore } from '$src/lib/stores/index.js';
+	let { children, data } = $props();
 
-	store.setNavItems([
+	// Set up storage path store
+	setStoragePathStore(new StoragePathStore(page.params.path));
+	const pathStore = getStoragePathStore();
+
+	$effect(() => {
+		pathStore.setPath(page.params.path);
+	});
+
+	let orgHeaderStore = getOrgHeaderStore();
+	orgHeaderStore.setNavItems([
 		{
 			name: 'Storage',
 			href: `/dashboard/org/${data.org.class_id}/storage`,

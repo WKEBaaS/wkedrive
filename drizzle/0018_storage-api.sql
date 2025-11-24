@@ -60,9 +60,11 @@ CREATE OR REPLACE FUNCTION api.delete_storage_objects(
 $$
     # VARIABLE_CONFLICT USE_COLUMN
 DECLARE
+    v_user_id         uuid := auth.jwt() ->> 'sub';
     v_storage_path    TEXT;
     v_target_name     TEXT;
     v_target_class_id VARCHAR(21);
+    v_temp_path       TEXT;
 BEGIN
     SELECT FORMAT('/組織/%s/Storage/%s', chinese_name, TRIM(BOTH '/' FROM p_path))
     INTO v_storage_path
@@ -77,10 +79,10 @@ BEGIN
 
     FOREACH v_target_name IN ARRAY p_names
         LOOP
-            SELECT id
-            INTO v_target_class_id
+            SELECT id, name_path
+            INTO v_target_class_id, v_temp_path
             FROM dbo.classes
-            WHERE name_path = FORMAT('%s/%s', v_storage_path, v_target_name);
+            WHERE name_path = FORMAT('%s%s', v_storage_path, v_target_name);
 
             -- 4. 如果找到對應的 Class，執行刪除
             IF found THEN
