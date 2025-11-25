@@ -1,4 +1,5 @@
 import * as v from 'valibot';
+import { MEGABYTE } from '$lib/components/ui/file-drop-zone';
 
 export const createOrganizationSchema = v.object({
 	p_name: v.pipe(
@@ -69,12 +70,15 @@ export const deleteStorageObjectsSchema = v.object({
 	p_names: v.array(v.string()),
 });
 
-export const createStorageFileSchema = v.object({
+export const uploadStorageFileSchema = v.object({
 	p_org_class_id: v.string(),
 	p_path: v.string(),
 	p_name: v.string(),
-	p_size: v.string(),
 	p_description: v.optional(v.string()),
+	p_file: v.pipe(
+		v.file(),
+		v.maxSize(10 * MEGABYTE),
+	),
 });
 
 export type CreateOrganizationPayload = v.InferInput<typeof createOrganizationSchema>;
