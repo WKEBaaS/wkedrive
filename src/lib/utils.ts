@@ -15,6 +15,20 @@ export function getInitials(name: string) {
 		.toUpperCase();
 }
 
+export function getS3Path(orgClassId: string, path: string, name: string, type: 'folder' | 'file' = 'file') {
+	let result = '';
+	if (path === '/') {
+		result = `org/${orgClassId}/${name}`;
+	} else {
+		result = `org/${orgClassId}/${path}/${name}`;
+	}
+
+	if (type === 'folder' && !result.endsWith('/')) {
+		result += '/';
+	}
+	return result;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

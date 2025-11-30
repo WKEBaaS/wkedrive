@@ -5,20 +5,25 @@
 	import Fuse from 'fuse.js';
 	import { CreateStorageFolder } from './(components)/create-storage-folder/index.js';
 	import { CurrentPath } from './(components)/current-path/index.js';
-	import { ObjectGridView, ObjectListView } from './(components)/object-list/index.js';
+	import { ObjectListView } from './(components)/object-list/index.js';
 	import { UploadStorageFile } from './(components)/upload-storage-file/index.js';
 	import { ViewModeSwitch } from './(components)/view-mode-switch/index.js';
+	import { getStorageObjects } from '$src/lib/remotes/storage.remote.js';
 
-	let { data } = $props();
-	let viewMode: 'list' | 'grid' = $state('list');
 	let searchQuery: string = $state('');
 
-	const fuse = new Fuse(data.objects, {
-		keys: ['name'],
-	});
+	const objects = $derived(await getStorageObjects());
+	const fuse = $derived(
+		new Fuse(objects, {
+			keys: ['name', 'description'],
+			threshold: 0.3,
+		}),
+	);
 
 	const filteredObjects = $derived.by(() => {
-		if (!searchQuery) return data.objects;
+		if (!fuse || !searchQuery) {
+			return objects;
+		}
 		return fuse.search(searchQuery).map((result) => result.item);
 	});
 </script>
@@ -40,16 +45,16 @@
 					</div>
 					<CreateStorageFolder />
 					<UploadStorageFile />
-					<ViewModeSwitch bind:viewMode />
+					<ViewModeSwitch />
 				</div>
 			</div>
 		</Card.Header>
 		<Card.Content class="p-0">
-			{#if viewMode === 'list'}
-				<ObjectListView objects={filteredObjects} />
-			{:else if viewMode === 'grid'}
-				<ObjectGridView objects={filteredObjects} />
-			{/if}
+			<!-- {#if viewMode === 'list'} -->
+			<ObjectListView objects={filteredObjects} />
+			<!-- {:else if viewMode === 'grid'} -->
+			<!-- <ObjectGridView objects={filteredObjects} /> -->
+			<!-- {/if} -->
 		</Card.Content>
 	</Card.Root>
 </div>

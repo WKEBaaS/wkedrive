@@ -67,7 +67,10 @@ export const createStorageFolderSchema = v.object({
 export const deleteStorageObjectsSchema = v.object({
 	p_org_class_id: v.string(),
 	p_path: v.string(),
-	p_names: v.array(v.string()),
+	p_objects: v.array(v.object({
+		name: v.string(),
+		type: v.picklist(['file', 'folder']),
+	})),
 });
 
 export const uploadStorageFileSchema = v.object({
@@ -79,6 +82,12 @@ export const uploadStorageFileSchema = v.object({
 		v.file(),
 		v.maxSize(10 * MEGABYTE),
 	),
+});
+
+export const getStorageFileSchema = v.object({
+	p_org_class_id: v.string(),
+	p_path: v.string(),
+	p_name: v.string(),
 });
 
 export type CreateOrganizationPayload = v.InferInput<typeof createOrganizationSchema>;

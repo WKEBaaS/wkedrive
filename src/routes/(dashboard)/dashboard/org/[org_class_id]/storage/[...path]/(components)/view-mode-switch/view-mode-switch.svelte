@@ -3,7 +3,7 @@
 	import { Grid3x3Icon, ListIcon } from '@lucide/svelte';
 
 	interface ViewModeSwitchProps {
-		viewMode: 'list' | 'grid';
+		viewMode?: 'list' | 'grid';
 	}
 
 	let { viewMode = $bindable('list') }: ViewModeSwitchProps = $props();

@@ -71,6 +71,10 @@ BEGIN
     FROM dbo.classes
     WHERE id = p_org_class_id;
 
+    IF NOT v_storage_path ~ '.*/$' THEN
+        v_storage_path := v_storage_path || '/';
+    END IF;
+
     IF NOT found THEN
         RAISE SQLSTATE 'PT404' USING
             MESSAGE = FORMAT('Organization ID %s not found', p_org_class_id),
@@ -106,6 +110,7 @@ CREATE OR REPLACE FUNCTION api.create_storage_file(
     p_path TEXT,
     p_name TEXT,
     p_size TEXT,
+    p_etag TEXT,
     p_description TEXT
 ) RETURNS VOID AS
 $$
@@ -148,13 +153,24 @@ BEGIN
             3,
             p_name,
             p_description,
-            NULL,
+            p_etag,
             p_size,
             v_user_id
             );
 END;
 $$ LANGUAGE plpgsql VOLATILE
                     SECURITY DEFINER;
+
+COMMENT ON FUNCTION api.create_storage_file IS $$Create Storage File
+Create a new file in the specified path within an organization's storage.
+Parameters:
+- p_org_class_id: The class ID of the organization.
+- p_path: The path within the organization's storage where the file will be created.
+- p_name: The name of the file.
+- p_size: The size of the file.
+- p_etag: The S3 Object ETag of the file.
+- p_description: A description of the file.
+$$;
 
 CREATE OR REPLACE FUNCTION api.get_storage_objects(
     p_org_class_id VARCHAR(21),
@@ -254,3 +270,68 @@ Returns:
   ...
 ]
 $$;
+
+
+CREATE OR REPLACE FUNCTION api.get_storage_file(
+    p_org_class_id VARCHAR(21),
+    p_path TEXT,
+    p_name TEXT
+)
+    RETURNS TABLE
+            (
+                id          VARCHAR(21),
+                name        TEXT,
+                description TEXT,
+                size        TEXT,
+                etag        TEXT,
+                created_at  timestamptz,
+                updated_at  timestamptz,
+                path        TEXT
+            )
+AS
+$$
+    # VARIABLE_CONFLICT USE_COLUMN
+DECLARE
+    v_is_root          BOOLEAN := (TRIM(BOTH '/' FROM p_path) = '');
+    v_file_entity_id   INT     := 3;
+    v_file_path        TEXT;
+    v_storage_class_id VARCHAR(21);
+    v_has_permission   BOOLEAN;
+BEGIN
+    SELECT CASE
+               WHEN v_is_root THEN FORMAT('/組織/%s/Storage/%s', chinese_name, p_name)
+               ELSE FORMAT('/組織/%s/Storage/%s/%s', chinese_name, TRIM(BOTH '/' FROM p_path), p_name)
+               END
+    INTO v_file_path
+    FROM dbo.classes
+    WHERE id = p_org_class_id;
+    IF NOT found THEN
+        RAISE SQLSTATE 'PT404' USING
+            MESSAGE = FORMAT('Organization ID %s not found', p_org_class_id),
+            HINT = 'Check the organization class ID.';
+    END IF;
+
+    SELECT class_id, has
+    FROM api.check_class_permission_by_name_path(v_file_path, 'read-object')
+    INTO v_storage_class_id, v_has_permission;
+    IF NOT v_has_permission THEN
+        RAISE SQLSTATE 'PT403' USING
+            MESSAGE = 'User does not have permission to access this storage file in this organization',
+            HINT = 'Check your permissions.';
+    END IF;
+
+    RETURN QUERY
+        SELECT c.id,
+               c.chinese_name::TEXT                                AS name,
+               c.chinese_description::TEXT                         AS description,
+               c.english_description::TEXT                         AS size,
+               c.english_name::TEXT                                AS etag,
+               c.created_at,
+               c.updated_at,
+               SUBSTRING(c.name_path FROM LENGTH(v_file_path) + 2) AS path
+        FROM dbo.classes c
+        WHERE c.name_path = v_file_path
+          AND c.entity_id = v_file_entity_id;
+END;
+$$ LANGUAGE plpgsql STABLE
+                    SECURITY DEFINER;

@@ -20,10 +20,9 @@
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime.js';
 	import ObjectEmpty from './object-empty.svelte';
-	import { deleteStorageObjects } from '$src/lib/remotes/index.js';
+	import { deleteStorageObjects, getStorageFile } from '$src/lib/remotes/index.js';
 	import { getStoragePathStore } from '$src/lib/stores';
-	import * as Field from '$src/lib/components/ui/field/index.js';
-
+	import { SvelteMap } from 'svelte/reactivity';
 	dayjs.extend(relativeTime);
 
 	interface ObjectListProps {
@@ -34,70 +33,42 @@
 	let { objects, onFileAction }: ObjectListProps = $props();
 
 	const pathStore = getStoragePathStore();
+	let selected = new SvelteMap<string, Pick<StorageObject, 'name' | 'type'>>();
 	let deleteObjectOpen = $state(false);
 	let objectToDelete: StorageObject | null = $state(null);
 
 	const toggleAll = () => {
-		const selected = deleteStorageObjects.fields.p_names.value() || [];
-		if (selected.length === objects.length) {
-			deleteStorageObjects.fields.p_names.set([]);
+		if (selected.size === objects.length) {
+			selected.clear();
 		} else {
-			deleteStorageObjects.fields.p_names.set(objects.map((object) => object.name));
+			objects.forEach((obj) => selected.set(obj.id, { name: obj.name, type: obj.type }));
 		}
 	};
 
-	const toggleSelected = (name: string) => {
-		const selected = deleteStorageObjects.fields.p_names.value() || [];
-		if (selected.includes(name)) {
-			deleteStorageObjects.fields.p_names.set(selected.filter((n) => n !== name));
+	const toggleSelected = (id: string) => {
+		if (selected.has(id)) {
+			selected.delete(id);
 		} else {
-			deleteStorageObjects.fields.p_names.set([...selected, name]);
+			const obj = objects.find((o) => o.id === id);
+			if (obj) {
+				selected.set(id, { name: obj.name, type: obj.type });
+			}
 		}
-	};
-
-	const isSelected = (name: string) => {
-		const selected = deleteStorageObjects.fields.p_names.value() || [];
-		return selected.includes(name);
 	};
 </script>
 
 {#if objects.length === 0}
 	<ObjectEmpty />
 {:else}
-	{#each deleteStorageObjects.fields.allIssues() ?? [] as issue, index (index)}
-		<Field.Error>{issue.message} </Field.Error>
-	{/each}
-
-	{#if deleteStorageObjects.fields.p_names.value()?.length > 0}
+	{#if selected.size > 0}
 		<div class="flex items-center justify-between rounded-md border bg-muted/50 p-3">
 			<span class="text-sm font-medium">
-				{deleteStorageObjects.fields.p_names.value()?.length} member{
-					deleteStorageObjects.fields.p_names.value()?.length > 1 ? 's' : ''
-				} selected
+				{selected.size} member{selected.size > 1 ? 's' : ''} selected
 			</span>
-			<AlertDialog.Root>
-				<AlertDialog.Trigger type="button" class={buttonVariants({ variant: 'destructive', size: 'sm' })}>
-					<Trash2Icon class="mr-2 size-4" />
-					Delete Selected
-				</AlertDialog.Trigger>
-				<AlertDialog.Content>
-					<AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
-					<AlertDialog.Description>
-						Are you sure you want to delete the selected items?
-					</AlertDialog.Description>
-					<AlertDialog.Footer>
-						<form {...deleteStorageObjects}>
-							<input {...deleteStorageObjects.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
-							<input {...deleteStorageObjects.fields.p_path.as('hidden', pathStore.getPath())} />
-							{#each deleteStorageObjects.fields.p_names.value() as name (name)}
-								<input hidden {...deleteStorageObjects.fields.p_names.as('checkbox', name)} />
-							{/each}
-							<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
-							<AlertDialog.Action type="submit">Delete</AlertDialog.Action>
-						</form>
-					</AlertDialog.Footer>
-				</AlertDialog.Content>
-			</AlertDialog.Root>
+			<Button variant="destructive" size="sm" onclick={() => (deleteObjectOpen = true)}>
+				<Trash2Icon class="mr-2 size-4" />
+				Delete Selected
+			</Button>
 		</div>
 	{/if}
 	<Table.Root>
@@ -105,8 +76,7 @@
 			<Table.Row>
 				<Table.Head class="w-12">
 					<Checkbox
-						checked={objects.length > 0 &&
-							deleteStorageObjects.fields.p_names.value()?.length === objects.length}
+						checked={objects.length > 0 && selected.size === objects.length}
 						onCheckedChange={toggleAll}
 					/>
 				</Table.Head>
@@ -120,14 +90,12 @@
 		</Table.Header>
 		<Table.Body>
 			{#each objects as object (object.id)}
-				<Table.Row class={isSelected(object.id) ? 'bg-muted/50' : ''}>
+				<Table.Row class={selected.has(object.id) ? 'bg-muted/50' : ''}>
 					<Table.Cell>
-						{@const f = deleteStorageObjects.fields.p_names.as('checkbox', object.name)}
 						<Checkbox
-							name={f.name}
-							value={f.value}
-							checked={f.checked}
-							onCheckedChange={() => toggleSelected(object.name)}
+							name={object.name}
+							checked={selected.has(object.id)}
+							onCheckedChange={() => toggleSelected(object.id)}
 						/>
 					</Table.Cell>
 					<Table.Cell>
@@ -174,7 +142,16 @@
 									{/if}
 								</DropdownMenu.Item>
 
-								<DropdownMenu.Item onclick={() => onFileAction?.('download', object)}>
+								<DropdownMenu.Item
+									onclick={async () => {
+										const link = await getStorageFile({
+											p_org_class_id: page.params.org_class_id!,
+											p_path: pathStore.getPath(),
+											p_name: object.name,
+										});
+										window.open(link, '_blank');
+									}}
+								>
 									<DownloadIcon class="h-4 w-4 mr-2" />
 									{object.type === 'folder' ? 'Download as ZIP' : 'Download'}
 								</DropdownMenu.Item>
@@ -219,21 +196,27 @@
 				Are you sure you want to delete "{objectToDelete?.name}"?
 			</AlertDialog.Description>
 			<AlertDialog.Footer>
-				<form
-					{...deleteStorageObjects.enhance(async ({ submit, form }) => {
-						await submit();
-						form.reset();
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<AlertDialog.Action
+					onclick={async () => {
+						if (objectToDelete) {
+							await deleteStorageObjects({
+								p_org_class_id: page.params.org_class_id!,
+								p_path: pathStore.getPath(),
+								p_objects: [{ name: objectToDelete.name, type: objectToDelete.type }],
+							});
+							selected.delete(objectToDelete.id);
+						} else {
+							await deleteStorageObjects({
+								p_org_class_id: page.params.org_class_id!,
+								p_path: pathStore.getPath(),
+								p_objects: Array.from(selected.values()),
+							});
+							selected.clear();
+						}
 						deleteObjectOpen = false;
-					})}
-				>
-					<input {...deleteStorageObjects.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
-					<input {...deleteStorageObjects.fields.p_path.as('hidden', pathStore.getPath())} />
-					{#if objectToDelete}
-						<input hidden {...deleteStorageObjects.fields.p_names.as('checkbox', objectToDelete.name)} />
-					{/if}
-					<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
-					<AlertDialog.Action type="submit">Delete</AlertDialog.Action>
-				</form>
+					}}
+				>Delete</AlertDialog.Action>
 			</AlertDialog.Footer>
 		</AlertDialog.Content>
 	</AlertDialog.Root>

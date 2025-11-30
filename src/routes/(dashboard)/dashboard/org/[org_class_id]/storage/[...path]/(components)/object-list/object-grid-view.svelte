@@ -61,9 +61,7 @@
 	{/each}
 
 	{#if deleteStorageObjects.fields.p_names.value()?.length > 0}
-		<div
-			class="flex items-center justify-between rounded-md border bg-muted/50 p-3 mb-4"
-		>
+		<div class="flex items-center justify-between rounded-md border bg-muted/50 p-3 mb-4">
 			<span class="text-sm font-medium">
 				{deleteStorageObjects.fields.p_names.value()?.length} member{
 					deleteStorageObjects.fields.p_names.value()
@@ -73,13 +71,7 @@
 				} selected
 			</span>
 			<AlertDialog.Root>
-				<AlertDialog.Trigger
-					type="button"
-					class={buttonVariants({
-						variant: 'destructive',
-						size: 'sm',
-					})}
-				>
+				<AlertDialog.Trigger type="button" class={buttonVariants({ variant: 'destructive', size: 'sm' })}>
 					<Trash2Icon class="mr-2 size-4" />
 					Delete Selected
 				</AlertDialog.Trigger>
@@ -90,26 +82,10 @@
 					</AlertDialog.Description>
 					<AlertDialog.Footer>
 						<form {...deleteStorageObjects}>
-							<input
-								{...deleteStorageObjects.fields.p_org_class_id.as(
-									'hidden',
-									page.params.org_class_id ?? '',
-								)}
-							/>
-							<input
-								{...deleteStorageObjects.fields.p_path.as(
-									'hidden',
-									pathStore.getPath(),
-								)}
-							/>
+							<input {...deleteStorageObjects.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
+							<input {...deleteStorageObjects.fields.p_path.as('hidden', pathStore.getPath())} />
 							{#each deleteStorageObjects.fields.p_names.value() as name (name)}
-								<input
-									hidden
-									{...deleteStorageObjects.fields.p_names.as(
-										'checkbox',
-										name,
-									)}
-								/>
+								<input hidden {...deleteStorageObjects.fields.p_names.as('checkbox', name)} />
 							{/each}
 							<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
 							<AlertDialog.Action type="submit">Delete</AlertDialog.Action>
@@ -120,9 +96,7 @@
 		</div>
 	{/if}
 
-	<div
-		class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4"
-	>
+	<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
 		{#each objects as object (object.id)}
 			{@const f = deleteStorageObjects.fields.p_names.as('checkbox', object.name)}
 			<div
