@@ -65,9 +65,24 @@ export const organizationInvitationSchema = v.object({
 	updated_at: v.string(),
 });
 
+export const getUserInvitationsOutput = v.object({
+	...organizationInvitationSchema.entries,
+	inviter_email: v.pipe(
+		v.string(),
+		v.trim(),
+		v.email(),
+	),
+	organization_name: v.string(),
+	organization_description: v.nullable(v.string()),
+});
+
+// Models
 export type Organization = v.InferInput<typeof organizationSchema>;
 export type OrganizationMember = v.InferInput<typeof organizationMemberSchema>;
 export type OrganizationGroup = v.InferInput<typeof organizationGroupSchema>;
 export type OrganizationInvitation = v.InferInput<typeof organizationInvitationSchema>;
 export type OrganizationGroupMember = Omit<v.InferInput<typeof organizationMemberSchema>, 'role'>;
 export type StorageObject = v.InferInput<typeof storageObjectSchema>;
+
+// API Outputs
+export type GetUserInvitationsOutput = v.InferInput<typeof getUserInvitationsOutput>;

@@ -4,7 +4,11 @@ export const GET_ORGANIZATIONS = '/api/rest/rpc/get_organizations';
 export const CREATE_ORGANIZATION = '/api/rest/rpc/create_organization';
 export const DELETE_ORGANIZATION = '/api/rest/rpc/delete_organization';
 export const GET_ORGANIZATION_INVITATIONS = '/api/rest/rpc/get_organization_invitations';
+
+// Invitation Endpoints
+export const GET_USER_INVITATIONS = '/api/rest/rpc/get_user_invitations';
 export const INVITE_TO_ORGANIZATION = '/api/rest/rpc/invite_to_organization';
+export const UPDATE_INVITATION_STATUS = '/api/rest/rpc/update_invitation_status';
 
 // Member Endpoints
 export const GET_ORGANIZATION_MEMBERS = '/api/rest/rpc/get_organization_members';

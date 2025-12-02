@@ -104,6 +104,14 @@ export const inviteToOrganizationSchema = v.object({
 	)),
 });
 
+export const updateInvitationStatusSchema = v.object({
+	p_invitation_id: v.pipe(
+		v.string(),
+		v.uuid(),
+	),
+	p_status: v.picklist(['PENDING', 'ACCEPTED', 'DECLINED', 'REVOKED']),
+});
+
 export type CreateOrganizationPayload = v.InferInput<typeof createOrganizationSchema>;
 export type CreateOrganizationGroupPayload = v.InferInput<typeof createOrganizationGroupSchema>;
 export type DeleteOrganizationPayload = v.InferInput<typeof deleteOrganizationSchema>;

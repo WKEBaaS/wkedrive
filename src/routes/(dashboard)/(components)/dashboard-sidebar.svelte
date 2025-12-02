@@ -5,7 +5,7 @@
 	import { authClient } from '$lib/auth-client';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { Icon } from '@lucide/svelte';
-	import { Building2, LogOut, Settings } from '@lucide/svelte';
+	import { Building2Icon, InboxIcon, LogOutIcon, SettingsIcon } from '@lucide/svelte';
 
 	type Item = {
 		title: string;
@@ -17,7 +17,12 @@
 		{
 			title: 'Organizations',
 			url: resolve('/dashboard/organizations'),
-			icon: Building2,
+			icon: Building2Icon,
+		},
+		{
+			title: 'Invitations',
+			url: resolve('/dashboard/invitations'),
+			icon: InboxIcon,
 		},
 	] satisfies Item[];
 
@@ -30,7 +35,7 @@
 		{
 			title: 'Settings',
 			url: '#',
-			icon: Settings,
+			icon: SettingsIcon,
 		},
 	];
 </script>
@@ -86,7 +91,7 @@
 								goto(resolve('/'));
 							}}
 						>
-							<LogOut />
+							<LogOutIcon />
 							<span>Logout</span>
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>

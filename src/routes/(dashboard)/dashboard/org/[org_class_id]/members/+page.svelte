@@ -22,6 +22,10 @@
 			.join('')
 			.toUpperCase();
 	}
+
+	const invitations = $derived(
+		await getOrganizationInvitations({ org_class_id, type: 'INVITATION', status: 'PENDING' }),
+	);
 </script>
 
 <div class="space-y-6 p-4">
@@ -66,7 +70,7 @@
 								{member.role}
 							</Table.Cell>
 							<Table.Cell class="text-right text-muted-foreground">
-								{dayjs(member.joined_at).format('YYYY-MM-DD')}
+								{dayjs(member.joined_at).fromNow()}
 							</Table.Cell>
 						</Table.Row>
 					{/each}
@@ -75,7 +79,7 @@
 		</Table.Root>
 	</div>
 
-	{#if (await getOrganizationInvitations(org_class_id)).invitations.length !== 0}
+	{#if invitations.length !== 0}
 		<div class="rounded-md border">
 			<div class="px-6 py-4 border-b bg-accent">
 				<h2 class="text-lg font-semibold text-accent-foreground">Pending Invitations</h2>
@@ -91,7 +95,7 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{#each (await getOrganizationInvitations(org_class_id)).invitations as invitation (invitation.id)}
+					{#each invitations as invitation (invitation.id)}
 						<Table.Row>
 							<Table.Cell>{invitation.email}</Table.Cell>
 							<Table.Cell>{invitation.invitee_name}</Table.Cell>
