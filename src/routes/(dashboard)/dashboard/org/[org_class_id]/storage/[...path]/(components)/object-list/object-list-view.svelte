@@ -23,6 +23,7 @@
 	import { deleteStorageObjects, getStorageFile } from '$src/lib/remotes/index.js';
 	import { getStoragePathStore } from '$src/lib/stores';
 	import { SvelteMap } from 'svelte/reactivity';
+	import { goto } from '$app/navigation';
 	dayjs.extend(relativeTime);
 
 	interface ObjectListProps {
@@ -132,7 +133,23 @@
 								<span class="sr-only">Actions</span>
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content align="end">
-								<DropdownMenu.Item onclick={() => onFileAction?.('open', object)}>
+								<DropdownMenu.Item
+									onclick={async () => {
+										if (object.type === 'folder') {
+											goto(resolve('/(dashboard)/dashboard/org/[org_class_id]/storage/[...path]', {
+												org_class_id: page.params.org_class_id!,
+												path: object.path,
+											}));
+											return;
+										}
+										const link = await getStorageFile({
+											p_org_class_id: page.params.org_class_id!,
+											p_path: pathStore.getPath(),
+											p_name: object.name,
+										});
+										window.open(link, '_blank');
+									}}
+								>
 									{#if object.type === 'folder'}
 										<FolderIcon class="h-4 w-4 mr-2" />
 										Open

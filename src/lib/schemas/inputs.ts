@@ -90,6 +90,20 @@ export const getStorageFileSchema = v.object({
 	p_name: v.string(),
 });
 
+export const inviteToOrganizationSchema = v.object({
+	p_org_class_id: v.string(),
+	p_invitee_email: v.pipe(
+		v.string(),
+		v.trim(),
+		v.email(),
+	),
+	p_expires_in_days: v.optional(v.pipe(
+		v.number(),
+		v.minValue(1),
+		v.maxValue(30),
+	)),
+});
+
 export type CreateOrganizationPayload = v.InferInput<typeof createOrganizationSchema>;
 export type CreateOrganizationGroupPayload = v.InferInput<typeof createOrganizationGroupSchema>;
 export type DeleteOrganizationPayload = v.InferInput<typeof deleteOrganizationSchema>;

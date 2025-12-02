@@ -134,6 +134,13 @@
       "when": 1763280059858,
       "tag": "0018_storage-api",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1764650578402,
+      "tag": "0019_invitation-api",
+      "breakpoints": true
     }
   ]
 }

@@ -1,9 +1,16 @@
 <script lang="ts">
-	import * as Table from '$lib/components/ui/table';
+	import { page } from '$app/state';
 	import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
+	import * as Table from '$lib/components/ui/table';
+	import { getOrganizationInvitations } from '$src/lib/remotes/index.js';
+	import { cn } from '$src/lib/utils.js';
 	import dayjs from 'dayjs';
+	import relativeTime from 'dayjs/plugin/relativeTime.js';
+	import { InviteUser } from './(components)/invite-user/index.js';
+	dayjs.extend(relativeTime);
 
 	let { data } = $props();
+	let org_class_id = $derived(page.params.org_class_id ?? '');
 
 	// --- Helper Functions ---
 
@@ -18,9 +25,15 @@
 </script>
 
 <div class="space-y-6 p-4">
-	<div class="text-2xl font-bold">Organization Members</div>
+	<div class="flex items-center justify-between">
+		<div class="text-2xl font-bold">Organization Members</div>
+		<InviteUser />
+	</div>
 
 	<div class="rounded-md border">
+		<div class="px-6 py-4 border-b bg-accent">
+			<h2 class="text-lg font-semibold text-accent-foreground">Current Members</h2>
+		</div>
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
@@ -61,4 +74,47 @@
 			</Table.Body>
 		</Table.Root>
 	</div>
+
+	{#if (await getOrganizationInvitations(org_class_id)).invitations.length !== 0}
+		<div class="rounded-md border">
+			<div class="px-6 py-4 border-b bg-accent">
+				<h2 class="text-lg font-semibold text-accent-foreground">Pending Invitations</h2>
+			</div>
+			<Table.Root>
+				<Table.Header>
+					<Table.Row>
+						<Table.Head>Email</Table.Head>
+						<Table.Head>Invitee Name</Table.Head>
+						<Table.Head>Invited By</Table.Head>
+						<Table.Head>Status</Table.Head>
+						<Table.Head>Invited At</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
+					{#each (await getOrganizationInvitations(org_class_id)).invitations as invitation (invitation.id)}
+						<Table.Row>
+							<Table.Cell>{invitation.email}</Table.Cell>
+							<Table.Cell>{invitation.invitee_name}</Table.Cell>
+							<Table.Cell>{invitation.inviter_name}</Table.Cell>
+							<Table.Cell
+								class={cn(
+									'capitalize',
+									invitation.status === 'PENDING'
+										? 'text-yellow-600'
+										: invitation.status === 'ACCEPTED'
+										? 'text-green-600'
+										: invitation.status === 'DECLINED'
+										? 'text-red-600'
+										: invitation.status === 'EXPIRED'
+										? 'text-gray-600'
+										: '',
+								)}
+							>{invitation.status}</Table.Cell>
+							<Table.Cell>{dayjs(invitation.created_at).fromNow()}</Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+			</Table.Root>
+		</div>
+	{/if}
 </div>
