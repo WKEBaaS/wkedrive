@@ -1,14 +1,12 @@
 <script lang="ts">
-	import { getUserInvitations, updateInvitationStatus } from '$src/lib/remotes/index.js';
-	import { ChevronRightIcon, LoaderCircleIcon, MailIcon, ShieldCheckIcon } from '@lucide/svelte';
-	import { Badge } from '$src/lib/components/ui/badge/index.js';
 	import * as Avatar from '$src/lib/components/ui/avatar/index.js';
-	import { getInitials } from '$src/lib/utils';
-	import * as Dialog from '$src/lib/components/ui/dialog/index.js';
-	import * as Drawer from '$src/lib/components/ui/drawer/index.js';
+	import { Badge } from '$src/lib/components/ui/badge/index.js';
 	import { buttonVariants } from '$src/lib/components/ui/button';
-	import { Button } from '$src/lib/components/ui/button/index.js';
+	import * as Dialog from '$src/lib/components/ui/dialog/index.js';
+	import { getUserInvitations, updateInvitationStatus } from '$src/lib/remotes/index.js';
 	import type { GetUserInvitationsOutput } from '$src/lib/schemas';
+	import { getInitials } from '$src/lib/utils';
+	import { ChevronRightIcon, MailIcon, ShieldCheckIcon } from '@lucide/svelte';
 
 	const invitations = $derived(await getUserInvitations({ status: 'PENDING' }));
 	let open = $state(false);

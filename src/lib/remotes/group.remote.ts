@@ -16,27 +16,43 @@ import {
 export const createOrgGroup = form(createOrganizationGroupSchema, async (data) => {
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
-	await api.postgrest.post(CREATE_ORGANIZATION_GROUP, token, data);
+	await api.postgrest.post({
+		endpoint: CREATE_ORGANIZATION_GROUP,
+		token: token,
+		data: data,
+	});
 	return { success: true };
 });
 
 export const deleteOrgGroup = form(deleteOrganizationGroupSchema, async (data) => {
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
-	await api.postgrest.post(DELETE_ORGANIZATION_GROUP, token, data);
+	await api.postgrest.post({
+		endpoint: DELETE_ORGANIZATION_GROUP,
+		token: token,
+		data: data,
+	});
 	return { success: true };
 });
 
 export const addMembersToGroup = form(addMembersToGroupSchema, async (data) => {
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
-	await api.postgrest.post(ADD_MEMBERS_TO_GROUP, token, data);
+	await api.postgrest.post({
+		endpoint: ADD_MEMBERS_TO_GROUP,
+		token: token,
+		data: data,
+	});
 	return { success: true };
 });
 
 export const removeMembersFromGroup = form(removeMembersFromGroupSchema, async (data) => {
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
-	await api.postgrest.post(REMOVE_MEMBERS_FROM_GROUP, token, data);
+	await api.postgrest.post({
+		endpoint: REMOVE_MEMBERS_FROM_GROUP,
+		token: token,
+		data: data,
+	});
 	return { success: true };
 });

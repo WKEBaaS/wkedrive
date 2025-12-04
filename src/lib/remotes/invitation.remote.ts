@@ -2,10 +2,8 @@ import { command, form, getRequestEvent, query } from '$app/server';
 import * as api from '$lib/server';
 import * as v from 'valibot';
 import {
-	type GetUserInvitationsOutput,
 	getUserInvitationsOutput,
 	inviteToOrganizationSchema,
-	type OrganizationInvitation,
 	organizationInvitationSchema,
 	updateInvitationStatusSchema,
 } from '../schemas';
@@ -28,16 +26,17 @@ export const getOrganizationInvitations = query(
 		const event = getRequestEvent();
 		const token = await api.auth.fetchToken(event);
 
-		const body: Record<string, string> = {};
-		body['p_org_class_id'] = data.org_class_id;
-		if (data.status) {
-			body['status'] = 'eq.' + data.status;
-		}
-		if (data.type) {
-			body['type'] = 'eq.' + data.type;
-		}
-
-		const invitations = await api.postgrest.get<OrganizationInvitation[]>(GET_ORGANIZATION_INVITATIONS, token, body);
+		// const invitations = await api.postgrest.get<OrganizationInvitation[]>(GET_ORGANIZATION_INVITATIONS, token, body);
+		const invitations = await api.postgrest.get({
+			endpoint: GET_ORGANIZATION_INVITATIONS,
+			token: token,
+			schema: v.array(organizationInvitationSchema),
+			params: {
+				p_org_class_id: data.org_class_id,
+				status: data.status ? 'eq.' + data.status : undefined,
+				type: data.type ? 'eq.' + data.type : undefined,
+			},
+		});
 
 		return invitations;
 	},
@@ -47,9 +46,14 @@ export const getUserInvitations = query(v.pick(getUserInvitationsOutput, ['statu
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
 
-	const invitations = await api.postgrest.get<GetUserInvitationsOutput[]>(GET_USER_INVITATIONS, token, {
-		type: 'eq.INVITATION',
-		status: 'eq.' + status,
+	const invitations = await api.postgrest.get({
+		endpoint: GET_USER_INVITATIONS,
+		token: token,
+		schema: v.array(getUserInvitationsOutput),
+		params: {
+			type: 'eq.INVITATION',
+			status: 'eq.' + status,
+		},
 	});
 
 	return invitations;
@@ -61,8 +65,10 @@ export const inviteToOrganization = form(
 		const event = getRequestEvent();
 		const token = await api.auth.fetchToken(event);
 
-		await api.postgrest.post<OrganizationInvitation[]>(INVITE_TO_ORGANIZATION, token, {
-			...data,
+		await api.postgrest.post({
+			endpoint: INVITE_TO_ORGANIZATION,
+			token: token,
+			data: data,
 		});
 
 		getOrganizationInvitations({ org_class_id: data.p_org_class_id }).refresh();
@@ -77,7 +83,11 @@ export const updateInvitationStatus = command(updateInvitationStatusSchema, asyn
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
 
-	await api.postgrest.post<void>(UPDATE_INVITATION_STATUS, token, data);
+	await api.postgrest.post({
+		endpoint: UPDATE_INVITATION_STATUS,
+		token: token,
+		data: data,
+	});
 
 	getUserInvitations({ status: 'PENDING' }).refresh();
 

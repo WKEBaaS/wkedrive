@@ -15,12 +15,16 @@
 	});
 
 	let orgHeaderStore = getOrgHeaderStore();
-	orgHeaderStore.setNavItems([
-		{
-			name: 'Storage',
-			href: `/dashboard/org/${data.org.class_id}/storage`,
-		},
-	]);
+	$effect(() => {
+		if (data?.org.class_id) {
+			orgHeaderStore.setNavItems([
+				{
+					name: 'Storage',
+					href: `/dashboard/org/${data.org.class_id}/storage`,
+				},
+			]);
+		}
+	});
 </script>
 
 {@render children?.()}

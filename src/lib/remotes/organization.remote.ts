@@ -8,7 +8,11 @@ import { resolve } from '$app/paths';
 export const createOrganization = form(createOrganizationSchema, async (data) => {
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
-	await api.postgrest.post(CREATE_ORGANIZATION, token, data);
+	await api.postgrest.post({
+		endpoint: CREATE_ORGANIZATION,
+		token: token,
+		data: data,
+	});
 
 	redirect(301, resolve('/dashboard/organizations'));
 });
@@ -16,7 +20,11 @@ export const createOrganization = form(createOrganizationSchema, async (data) =>
 export const deleteOrganization = form(deleteOrganizationSchema, async (data) => {
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
-	await api.postgrest.post(DELETE_ORGANIZATION, token, data);
+	await api.postgrest.post({
+		endpoint: DELETE_ORGANIZATION,
+		token: token,
+		data: data,
+	});
 
 	redirect(301, resolve('/dashboard/organizations'));
 });

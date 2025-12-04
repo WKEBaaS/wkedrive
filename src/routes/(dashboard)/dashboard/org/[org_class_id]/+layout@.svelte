@@ -5,8 +5,14 @@
 
 	let { children, data } = $props();
 
-	const orgHeaderStore = new OrgHeaderStore(data.org.name);
+	const orgHeaderStore = new OrgHeaderStore('');
 	setOrgHeaderStore(orgHeaderStore);
+
+	$effect(() => {
+		if (data?.org.name) {
+			orgHeaderStore.setOrgName(data.org.name);
+		}
+	});
 </script>
 
 <OrgSidebar />

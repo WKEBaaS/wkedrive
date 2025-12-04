@@ -29,7 +29,7 @@
 			})}
 			oninput={() => inviteToOrganization.validate()}
 		>
-			<input {...inviteToOrganization.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />}
+			<input {...inviteToOrganization.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
 			<Field.Group>
 				<Field.Set>
 					<Field.Legend>Invite User to Organization</Field.Legend>
@@ -37,9 +37,6 @@
 						Enter the email address of the user you want to invite to your organization.
 					</Field.Description>
 					<Field.Group>
-						{#each inviteToOrganization.fields.allIssues() ?? [] as issue, index (index)}
-							<Field.Error>{issue.message}</Field.Error>
-						{/each}
 						<Field.Field>
 							<Field.Label for="email">User Email</Field.Label>
 							<Input

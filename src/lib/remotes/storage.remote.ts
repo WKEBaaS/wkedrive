@@ -8,6 +8,7 @@ import {
 	deleteStorageObjectsSchema,
 	getStorageFileSchema,
 	type StorageObject,
+	storageObjectSchema,
 	uploadStorageFileSchema,
 } from '$src/lib/schemas';
 import { error, invalid, isHttpError } from '@sveltejs/kit';
@@ -32,9 +33,14 @@ export const getStorageObjects = query(async () => {
 	}
 
 	const token = await api.auth.fetchToken(event);
-	const objects = await api.postgrest.get<StorageObject[]>(GET_STORAGE_OBJECTS, token, {
-		p_org_class_id: event.params.org_class_id!,
-		p_path: event.params.path ? `/${event.params.path}` : '/',
+	const objects = await api.postgrest.get({
+		endpoint: GET_STORAGE_OBJECTS,
+		token: token,
+		schema: v.array(storageObjectSchema),
+		params: {
+			p_org_class_id: event.params.org_class_id!,
+			p_path: event.params.path ? `/${event.params.path}` : '/',
+		},
 	});
 
 	return objects;
@@ -45,7 +51,11 @@ export const createStorageFolder = form(createStorageFolderSchema, async (data, 
 	const token = await api.auth.fetchToken(event);
 
 	try {
-		await api.postgrest.post(CREATE_STORAGE_FOLDER, token, data);
+		await api.postgrest.post({
+			endpoint: CREATE_STORAGE_FOLDER,
+			token: token,
+			data: data,
+		});
 
 		const folderPath = getS3Path(data.p_org_class_id, data.p_path, data.p_name, 'folder');
 		await api.minio.putObject(env.S3_BUCKET, folderPath, '');
@@ -81,10 +91,14 @@ export const uploadStorageFile = form(uploadStorageFileSchema, async (data) => {
 	});
 
 	const { p_file, ...body } = data;
-	await api.postgrest.post(CREATE_STORAGE_FILE, token, {
-		...body,
-		p_etag: resp.etag,
-		p_size: displaySize(p_file.size),
+	await api.postgrest.post({
+		endpoint: CREATE_STORAGE_FILE,
+		token: token,
+		data: {
+			...body,
+			p_etag: resp.etag,
+			p_size: displaySize(p_file.size),
+		},
 	});
 
 	return { success: true };
@@ -95,10 +109,15 @@ export const deleteStorageObjects = command(deleteStorageObjectsSchema, async (d
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
 
-	await api.postgrest.post(DELETE_STORAGE_OBJECTS, token, {
-		p_org_class_id: data.p_org_class_id,
-		p_path: data.p_path,
-		p_names: data.p_objects.map((obj) => obj.name),
+	// TODO: This api should returns deleted objects, currently not implemented
+	await api.postgrest.post({
+		endpoint: DELETE_STORAGE_OBJECTS,
+		token: token,
+		data: {
+			p_org_class_id: data.p_org_class_id,
+			p_path: data.p_path,
+			p_names: data.p_objects.map((obj) => obj.name),
+		},
 	});
 
 	const allObjectsToDelete: string[] = [];
@@ -147,7 +166,17 @@ export const deleteStorageObjects = command(deleteStorageObjectsSchema, async (d
 export const getStorageFile = command(getStorageFileSchema, async (data) => {
 	const event = getRequestEvent();
 	const token = await api.auth.fetchToken(event);
-	const [fileInfo] = await api.postgrest.get<StorageObject[]>(GET_STORAGE_FILE, token, data);
+
+	const fileInfo = await api.postgrest.getFirst({
+		endpoint: GET_STORAGE_FILE,
+		token: token,
+		schema: storageObjectSchema,
+		params: {
+			p_org_class_id: data.p_org_class_id,
+			p_path: data.p_path,
+			p_name: data.p_name,
+		},
+	});
 	if (!fileInfo) {
 		throw error(404, 'File not found');
 	}
