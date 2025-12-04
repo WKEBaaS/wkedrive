@@ -14,6 +14,17 @@ const config = {
 		adapter: adapter(),
 		alias: {
 			'$drizzle': './drizzle',
+			'$src': './src',
+			'$routes': './src/routes',
+		},
+		experimental: {
+			remoteFunctions: true,
+		},
+	},
+
+	compilerOptions: {
+		experimental: {
+			async: true,
 		},
 	},
 };

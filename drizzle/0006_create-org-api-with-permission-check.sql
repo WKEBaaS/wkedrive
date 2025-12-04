@@ -1,5 +1,9 @@
 -- Custom SQL migration file, put your code below! --
 
+GRANT ALL ON TABLE dbo.classes TO authenticated;
+GRANT ALL ON TABLE dbo.inheritances TO authenticated;
+GRANT ALL ON TABLE dbo.permissions TO authenticated;
+
 CREATE OR REPLACE FUNCTION api.create_organization(
     name TEXT,
     description TEXT

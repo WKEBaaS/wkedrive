@@ -1,14 +1,18 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+	import { authClient } from '$lib/auth-client.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { displaySize, FileDropZone, MEGABYTE } from '$lib/components/ui/file-drop-zone/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
+	import { UseClipboard } from '$lib/hooks/use-clipboard.svelte.js';
 	import XIcon from '@lucide/svelte/icons/x';
+	import { toast } from 'svelte-sonner';
 	import SuperDebug, { filesProxy, superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
 	import { uploadFileSchema } from './schema.js';
-	import { toast } from 'svelte-sonner';
 
 	let { data } = $props();
+	const clipboard = new UseClipboard();
 
 	const uploadFileForm = superForm(data.uploadFileForm, {
 		validators: valibotClient(uploadFileSchema),
@@ -28,6 +32,17 @@
 </script>
 
 <div>
+	<Button
+		onclick={async () => {
+			const { data, error } = await authClient.token();
+			if (error) {
+				toast.error('Failed to get JWT.', { description: error.message });
+				return;
+			}
+			await clipboard.copy(data.token);
+			toast.success('JWT copied to clipboard!');
+		}}
+	>Copy JWT (Debug)</Button>
 	<form method="POST" action="?/uploadFile" enctype="multipart/form-data" use:enhance>
 		<FileDropZone
 			onUpload={async (uploadedFiles) => {
@@ -63,4 +78,5 @@
 		<div class="mb-1 font-bold">Debug:</div>
 		<SuperDebug data={$formData} />
 	</form>
+	<Button class="mt-5" href={resolve('/dashboard/organizations')}>Go to Org.</Button>
 </div>

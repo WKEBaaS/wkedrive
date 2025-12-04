@@ -1,17 +1,17 @@
 -- Custom SQL migration file, put your code below! --
 
-CREATE TYPE invitation_type AS ENUM ('INVITATION', 'REQUEST');
-CREATE TYPE invitation_status AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED', 'EXPIRED');
+CREATE TYPE dbo.invitation_type AS ENUM ('INVITATION', 'REQUEST');
+CREATE TYPE dbo.invitation_status AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED', 'EXPIRED');
 
 CREATE TABLE IF NOT EXISTS dbo.organization_invitations
 (
-    id                    uuid              NOT NULL,
+    id                    uuid              NOT NULL DEFAULT uuidv7(),
     organization_class_id VARCHAR(21),
     invitee_id            uuid,
     email                 VARCHAR(255),
     inviter_id            uuid,
-    type                  invitation_type   NOT NULL,
-    status                invitation_status NOT NULL DEFAULT 'PENDING',
+    type                  dbo.invitation_type   NOT NULL,
+    status                dbo.invitation_status NOT NULL DEFAULT 'PENDING',
     token                 TEXT,
     created_at            timestamptz       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expired_at            timestamptz       NOT NULL,
