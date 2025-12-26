@@ -1,9 +1,0 @@
-{
-	"fmt": {
-		"exclude": ["./.svelte-kit/**", "./.git/**", "./src/lib/paraglide/**"],
-		"useTabs": true,
-		"singleQuote": true,
-		"lineWidth": 120,
-		"proseWrap": "always"
-	}
-}

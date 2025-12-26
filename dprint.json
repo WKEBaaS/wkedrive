@@ -1,0 +1,25 @@
+{
+  "typescript": {
+    "quoteStyle": "preferSingle"
+  },
+  "json": {},
+  "markdown": {},
+  "malva": {},
+  "markup": {
+    "printWidth": 120,
+    "useTabs": true,
+    "svelte.scriptIndent": true,
+    "quotes": "single"
+  },
+  "yaml": {},
+  "excludes": ["**/.svelte-kit", "**/node_modules", "**/*-lock.json"],
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.95.13.wasm",
+    "https://plugins.dprint.dev/json-0.21.0.wasm",
+    "https://plugins.dprint.dev/markdown-0.20.0.wasm",
+    "https://plugins.dprint.dev/g-plane/malva-v0.15.1.wasm",
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.25.1.wasm",
+    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
+    "https://plugins.dprint.dev/dockerfile-0.3.3.wasm"
+  ]
+}

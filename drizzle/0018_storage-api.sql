@@ -286,7 +286,8 @@ CREATE OR REPLACE FUNCTION api.get_storage_file(
                 etag        TEXT,
                 created_at  timestamptz,
                 updated_at  timestamptz,
-                path        TEXT
+                path        TEXT,
+                type        TEXT
             )
 AS
 $$
@@ -328,7 +329,8 @@ BEGIN
                c.english_name::TEXT                                AS etag,
                c.created_at,
                c.updated_at,
-               SUBSTRING(c.name_path FROM LENGTH(v_file_path) + 2) AS path
+               SUBSTRING(c.name_path FROM LENGTH(v_file_path) + 2) AS path,
+               'file'                                              AS type
         FROM dbo.classes c
         WHERE c.name_path = v_file_path
           AND c.entity_id = v_file_entity_id;
