@@ -1,5 +1,5 @@
 import { auth } from './auth';
+import { getMinIOClient } from './minio';
 import { postgrestClient } from './postgrest';
-import { minioClient } from './minio';
 
-export { auth, minioClient as minio, postgrestClient as postgrest };
+export { auth, getMinIOClient, postgrestClient as postgrest };

@@ -1,12 +1,18 @@
-import * as minio from 'minio';
 import { env } from '$env/dynamic/private';
+import * as minio from 'minio';
 
-const endpoint = new URL(env.S3_ENDPOINT);
+let minioClient: minio.Client | null;
 
-export const minioClient = new minio.Client({
-	endPoint: endpoint.hostname,
-	region: env.S3_REGION,
-	accessKey: env.S3_ACCESS_KEY_ID,
-	secretKey: env.S3_SECRET_ACCESS_KEY,
-	useSSL: endpoint.protocol === 'https:',
-});
+export const getMinIOClient = () => {
+  if (minioClient) return minioClient;
+
+  minioClient = new minio.Client({
+    endPoint: env.S3_ENDPOINT,
+    region: env.S3_REGION,
+    accessKey: env.S3_ACCESS_KEY_ID,
+    secretKey: env.S3_SECRET_ACCESS_KEY,
+    useSSL: env.S3_USE_SSL?.toLowerCase() === 'true',
+  });
+
+  return minioClient;
+};

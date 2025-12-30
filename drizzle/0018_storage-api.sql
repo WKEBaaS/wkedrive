@@ -195,14 +195,23 @@ DECLARE
     v_storage_name_path  TEXT;
     v_storage_prefix_len INT;
     v_storage_class_id   VARCHAR(21);
-    v_has_read_class     BOOLEAN;
-    v_has_read_object    BOOLEAN;
 BEGIN
-    SELECT FORMAT('/組織/%s/Storage/%s', chinese_name, TRIM(BOTH '/' FROM p_path)),
-           LENGTH(FORMAT('/組織/%s/Storage', chinese_name)) + 1
-    INTO v_storage_name_path, v_storage_prefix_len
-    FROM dbo.classes
-    WHERE id = p_org_class_id;
+    -- Find /org/{org_name}/Storage/{p_path}
+    SELECT CASE
+               WHEN TRIM(BOTH '/' FROM p_path) = '' THEN
+                   c.name_path
+               ELSE
+                   FORMAT('%s/%s', c.name_path, TRIM(BOTH '/' FROM p_path))
+               END,
+           LENGTH(c.name_path) + 1
+    INTO v_storage_name_path,
+        v_storage_prefix_len
+    FROM dbo.inheritances i,
+         dbo.classes c
+    WHERE i.pcid = p_org_class_id
+      AND i.ccid = c.id
+      AND c.chinese_name = 'Storage'
+    LIMIT 1;
 
     IF NOT found THEN
         RAISE SQLSTATE 'PT404' USING
@@ -210,19 +219,10 @@ BEGIN
             HINT = 'Check the organization class ID.';
     END IF;
 
-    SELECT class_id,
-           MAX(has::INT) FILTER ( WHERE permission = 'read-class' )  AS can_read_class,
-           MAX(has::INT) FILTER ( WHERE permission = 'read-object' ) AS can_read_object
-    INTO v_storage_class_id, v_has_read_class, v_has_read_object
-    FROM
-        api.get_class_permissions_by_name_path(v_storage_name_path)
-    GROUP BY class_id;
-
-    IF NOT (v_has_read_class OR v_has_read_object) THEN
-        RAISE SQLSTATE 'PT403' USING
-            MESSAGE = 'User does not have permission to access storage objects in this organization',
-            HINT = 'Check your permissions.';
-    END IF;
+    SELECT id
+    INTO v_storage_class_id
+    FROM dbo.classes
+    WHERE name_path = v_storage_name_path;
 
     RETURN QUERY
         SELECT c.id,

@@ -1,4 +1,4 @@
 import { env } from '$env/dynamic/private';
-import { PostgrestClient } from '@youmin1017/postgrest-client';
+import { createPostgrestClient } from '@wke-baas/postgrest-client';
 
-export const postgrestClient = new PostgrestClient(env.BAAS_API_URL);
+export const postgrestClient = createPostgrestClient(env.BAAS_API_URL);
