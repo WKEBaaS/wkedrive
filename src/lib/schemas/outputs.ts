@@ -43,7 +43,7 @@ export const storageObjectSchema = v.object({
   type: v.enum(StorageObjectType),
   size: v.nullable(v.string()),
   path: v.string(),
-  etag: v.optional(v.string()),
+  etag: v.nullable(v.string()),
   created_at: v.string(),
   updated_at: v.string(),
 });
