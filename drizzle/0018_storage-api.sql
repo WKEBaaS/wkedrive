@@ -182,6 +182,7 @@ CREATE OR REPLACE FUNCTION api.get_storage_objects(
                 name        TEXT,
                 description TEXT,
                 type        TEXT,
+                etag        TEXT,
                 created_at  timestamptz,
                 updated_at  timestamptz,
                 size        TEXT,
@@ -229,6 +230,7 @@ BEGIN
                c.chinese_name::TEXT                                                     AS name,
                c.chinese_description::TEXT                                              AS description,
                CASE WHEN (c.entity_id = v_file_entity_id) THEN 'file' ELSE 'folder' END AS type,
+               c.english_name::TEXT                                                     AS etag,
                c.created_at,
                c.updated_at,
                CASE
