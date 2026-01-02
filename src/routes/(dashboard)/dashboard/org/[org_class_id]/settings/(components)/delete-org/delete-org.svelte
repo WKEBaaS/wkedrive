@@ -1,18 +1,21 @@
-<script lang="ts">
-	import { page } from '$app/state';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-	import { buttonVariants } from '$lib/components/ui/button';
-	import { deleteOrganization } from '$src/lib/remotes';
+<script lang='ts'>
+	import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
+  import { page } from '$app/state';
+  import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+  import { buttonVariants } from '$lib/components/ui/button';
+  import { deleteOrganization } from '$src/lib/remotes';
+  import { toast } from 'svelte-sonner';
 </script>
 
-<div class="border-b pb-6">
-	<div class="flex items-start justify-between">
-		<div class="space-y-1">
-			<h3 class="text-lg font-medium">Delete Organization</h3>
-			<p class="text-sm text-muted-foreground">
+<div class='border-b pb-6'>
+	<div class='flex items-start justify-between'>
+		<div class='space-y-1'>
+			<h3 class='text-lg font-medium'>Delete Organization</h3>
+			<p class='text-sm text-muted-foreground'>
 				Permanently delete this organization and all of its data. This action cannot be undone.
 			</p>
-			<p class="text-sm text-muted-foreground">
+			<p class='text-sm text-muted-foreground'>
 				Please be certain before proceeding with deletion.
 			</p>
 		</div>
@@ -29,9 +32,23 @@
 				</AlertDialog.Header>
 				<AlertDialog.Footer>
 					<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-					<form {...deleteOrganization} class="inline">
+					<form
+						{...deleteOrganization.enhance(async ({ form, submit }) => {
+						  await submit();
+						  if (deleteOrganization.result?.success) {
+						    toast.success('Organization deleted successfully.');
+						    form.reset();
+						    goto(resolve(`/(dashboard)/dashboard/organizations`));
+						  } else {
+						    toast.error(deleteOrganization.result?.message || 'Failed to delete organization.', {
+						      description: deleteOrganization.result?.hint || '',
+						    });
+						  }
+						})}
+						class='inline'
+					>
 						<input {...deleteOrganization.fields.p_org_class_id.as('hidden', page.params.org_class_id ?? '')} />
-						<AlertDialog.Action type="submit">Delete</AlertDialog.Action>
+						<AlertDialog.Action type='submit'>Delete</AlertDialog.Action>
 					</form>
 				</AlertDialog.Footer>
 			</AlertDialog.Content>
