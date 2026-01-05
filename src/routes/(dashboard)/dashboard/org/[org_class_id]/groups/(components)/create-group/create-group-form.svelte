@@ -1,21 +1,22 @@
-<script lang="ts">
+<script lang='ts'>
 	import { page } from '$app/state';
-	import { OrgMemberSelector } from '$lib/components/org-member-selector/index.js';
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import * as Field from '$lib/components/ui/field/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import type { OrganizationMember } from '$lib/schemas';
-	import { createOrgGroup } from '$src/lib/remotes/index.js';
-	import { toast } from 'svelte-sonner';
+  import { OrgMemberSelector } from '$lib/components/org-member-selector/index.js';
+  import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+  import * as Dialog from '$lib/components/ui/dialog/index.js';
+  import * as Field from '$lib/components/ui/field/index.js';
+  import { Input } from '$lib/components/ui/input/index.js';
+  import type { OrganizationMember } from '$lib/schemas';
+  import { createOrgGroup } from '$src/lib/remotes/index.js';
+  import { toastError } from '$src/lib/utils';
+  import { toast } from 'svelte-sonner';
 
-	interface CreateGroupFormProps {
-		members: OrganizationMember[];
-	}
+  interface CreateGroupFormProps {
+    members: OrganizationMember[];
+  }
 
-	let { members }: CreateGroupFormProps = $props();
-	let selected: string[] = $state([]);
-	let open = $state(false);
+  let { members }: CreateGroupFormProps = $props();
+  let selected: string[] = $state([]);
+  let open = $state(false);
 </script>
 
 <Dialog.Root bind:open>
@@ -31,17 +32,19 @@
 		</Dialog.Header>
 		<form
 			{...createOrgGroup.enhance(async ({ submit }) => {
-				try {
-					await submit();
-					if (createOrgGroup.result?.success) {
-						open = false;
-						toast.success('Group created successfully.');
-					}
-				} catch (err) {
-					toast.error('Failed to create group. Please try again.', {
-						description: err instanceof Error ? err.message : undefined,
-					});
-				}
+			  try {
+			    await submit();
+			    if (createOrgGroup.result?.success) {
+			      open = false;
+			      toast.success('Group created successfully.');
+			    } else {
+			      toast.error(createOrgGroup.result?.message || 'Failed to create group.', {
+			        description: createOrgGroup.result?.description,
+			      });
+			    }
+			  } catch (err) {
+			    toastError(err);
+			  }
 			})}
 			oninput={() => createOrgGroup.validate()}
 		>
@@ -57,21 +60,21 @@
 				<Field.Set>
 					<Field.Group>
 						<Field.Field aria-invalid>
-							<Field.Label for="org_group_name">Group Name</Field.Label>
-							<Input id="org_group_name" {...createOrgGroup.fields.p_group_name.as('text')} />
+							<Field.Label for='org_group_name'>Group Name</Field.Label>
+							<Input id='org_group_name' {...createOrgGroup.fields.p_group_name.as('text')} />
 							{#each createOrgGroup.fields.p_group_name.issues() ?? [] as issue, index (index)}
 								<Field.Error>{issue.message}</Field.Error>
 							{/each}
 						</Field.Field>
 						<Field.Field aria-invalid>
-							<Field.Label for="org_group_description">Description</Field.Label>
-							<Input id="org_group_description" {...createOrgGroup.fields.p_group_description.as('text')} />
+							<Field.Label for='org_group_description'>Description</Field.Label>
+							<Input id='org_group_description' {...createOrgGroup.fields.p_group_description.as('text')} />
 							{#each createOrgGroup.fields.p_group_description.issues() ?? [] as issue, index (index)}
 								<Field.Error>{issue.message}</Field.Error>
 							{/each}
 						</Field.Field>
 						<Field.Field>
-							<Field.Label for="org_group_members">Initial Members</Field.Label>
+							<Field.Label for='org_group_members'>Initial Members</Field.Label>
 							<OrgMemberSelector {members} bind:selected />
 							{#each createOrgGroup.fields.p_init_user_ids.issues() ?? [] as issue, index (index)}
 								<Field.Error>{issue.message}</Field.Error>
@@ -79,9 +82,9 @@
 						</Field.Field>
 					</Field.Group>
 				</Field.Set>
-				<Field.Field orientation="horizontal">
-					<Button type="submit">Create Group</Button>
-					<Dialog.Close type="button" class={buttonVariants({ variant: 'outline' })}>
+				<Field.Field orientation='horizontal'>
+					<Button type='submit'>Create Group</Button>
+					<Dialog.Close type='button' class={buttonVariants({ variant: 'outline' })}>
 						Cancel
 					</Dialog.Close>
 				</Field.Field>

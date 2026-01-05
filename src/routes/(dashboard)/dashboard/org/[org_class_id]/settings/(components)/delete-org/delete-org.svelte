@@ -41,7 +41,7 @@
 						    goto(resolve(`/(dashboard)/dashboard/organizations`));
 						  } else {
 						    toast.error(deleteOrganization.result?.message || 'Failed to delete organization.', {
-						      description: deleteOrganization.result?.hint || '',
+						      description: deleteOrganization.result?.description,
 						    });
 						  }
 						})}

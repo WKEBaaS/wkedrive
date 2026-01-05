@@ -3,14 +3,14 @@ import { env } from '$env/dynamic/private';
 import { displaySize } from '$lib/components/ui/file-drop-zone';
 import * as api from '$lib/server';
 import {
-  appErrorSchema,
   createStorageFolderSchema,
   deleteStorageObjectsSchema,
   getStorageFileSchema,
   storageObjectSchema,
   uploadStorageFileSchema,
 } from '$src/lib/schemas';
-import { error, invalid, isHttpError } from '@sveltejs/kit';
+import { error, invalid } from '@sveltejs/kit';
+import { PostgrestClientError } from '@wke-baas/postgrest-client';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration.js';
 import * as v from 'valibot';
@@ -21,7 +21,8 @@ import {
   GET_STORAGE_FILE,
   GET_STORAGE_OBJECTS,
 } from '../server/postgrest/endpoints';
-import { getS3Path } from '../utils';
+import { errorToObject, getS3Path } from '../utils';
+import type { APIResponse } from './types';
 dayjs.extend(duration);
 
 export const getStorageObjects = query(async () => {
@@ -65,22 +66,16 @@ export const createStorageFolder = form(createStorageFolderSchema, async (data, 
     const minioClient = api.getMinIOClient();
     await minioClient.putObject(env.S3_BUCKET, folderPath, '');
 
-    return { success: true };
+    return { success: true } as APIResponse;
   } catch (e) {
-    if (!isHttpError(e)) {
-      throw e;
+    if (e instanceof PostgrestClientError) {
+      switch (e.status) {
+        case 409:
+          invalid(issue.p_name(`A folder with this name already exists.`));
+      }
     }
 
-    const parsedError = v.safeParse(appErrorSchema, e.body);
-    if (!parsedError.success) {
-      throw e;
-    }
-    switch (parsedError.output.status) {
-      case 409:
-        invalid(issue.p_name(`A folder with this name already exists.`));
-    }
-
-    throw e;
+    return errorToObject(e);
   }
 });
 
@@ -89,16 +84,18 @@ export const uploadStorageFile = form(uploadStorageFileSchema, async (data) => {
   const token = await api.auth.fetchToken(event);
 
   const { p_file, ...body } = data;
-  await api.postgrest.post({
-    endpoint: CREATE_STORAGE_FILE,
-    token: token,
-    data: {
-      ...body,
-      p_etag: null,
-      p_size: displaySize(p_file.size),
-    },
-  });
   try {
+    await api.postgrest.post({
+      endpoint: CREATE_STORAGE_FILE,
+      token: token,
+      data: {
+        ...body,
+        p_etag: null,
+        p_size: displaySize(p_file.size),
+      },
+    });
+
+    // Upload to S3 / MinIO
     const buffer = Buffer.from(await data.p_file.arrayBuffer());
     const objectPath = getS3Path(data.p_org_class_id, data.p_path, data.p_file.name, 'file');
     const minioClient = api.getMinIOClient();
@@ -108,11 +105,10 @@ export const uploadStorageFile = form(uploadStorageFileSchema, async (data) => {
       'Content-Length': data.p_file.size,
     });
   } catch (e) {
-    console.error('Error uploading file to S3:', e);
-    return { success: false, message: 'Failed to upload file to storage.' };
+    return errorToObject(e);
   }
 
-  return { success: true };
+  return { success: true } as APIResponse;
 });
 
 export const deleteStorageObjects = command(deleteStorageObjectsSchema, async (data) => {
@@ -120,15 +116,19 @@ export const deleteStorageObjects = command(deleteStorageObjectsSchema, async (d
   const token = await api.auth.fetchToken(event);
 
   // TODO: This api should returns deleted objects, currently not implemented
-  await api.postgrest.post({
-    endpoint: DELETE_STORAGE_OBJECTS,
-    token: token,
-    data: {
-      p_org_class_id: data.p_org_class_id,
-      p_path: data.p_path,
-      p_names: data.p_objects.map((obj) => obj.name),
-    },
-  });
+  try {
+    await api.postgrest.post({
+      endpoint: DELETE_STORAGE_OBJECTS,
+      token: token,
+      data: {
+        p_org_class_id: data.p_org_class_id,
+        p_path: data.p_path,
+        p_names: data.p_objects.map((obj) => obj.name),
+      },
+    });
+  } catch (err) {
+    return errorToObject(err);
+  }
 
   const allObjectsToDelete: string[] = [];
 
@@ -141,27 +141,31 @@ export const deleteStorageObjects = command(deleteStorageObjectsSchema, async (d
     }
 
     // 使用 Promise 等待 Stream 完成搜尋
-    const folderContents = await new Promise<string[]>((resolve, reject) => {
-      const tempPaths: string[] = [];
-      const minioClient = api.getMinIOClient();
-      const stream = minioClient.listObjectsV2(env.S3_BUCKET, path, true);
+    try {
+      const folderContents = await new Promise<string[]>((resolve, reject) => {
+        const tempPaths: string[] = [];
+        const minioClient = api.getMinIOClient();
+        const stream = minioClient.listObjectsV2(env.S3_BUCKET, path, true);
 
-      stream.on('data', (item) => {
-        if (item.name) tempPaths.push(item.name);
+        stream.on('data', (item) => {
+          if (item.name) tempPaths.push(item.name);
+        });
+
+        stream.on('error', (err) => {
+          console.error('Error listing objects:', err);
+          reject(err);
+        });
+
+        stream.on('end', () => {
+          resolve(tempPaths);
+        });
       });
 
-      stream.on('error', (err) => {
-        console.error('Error listing objects:', err);
-        reject(err);
-      });
-
-      stream.on('end', () => {
-        resolve(tempPaths);
-      });
-    });
-
-    // 將找到的資料夾內容加入總清單
-    allObjectsToDelete.push(...folderContents);
+      // 將找到的資料夾內容加入總清單
+      allObjectsToDelete.push(...folderContents);
+    } catch (err) {
+      return errorToObject(err);
+    }
   }
 
   // 2. 最後執行一次性批次刪除 (效能較好)
@@ -173,24 +177,27 @@ export const deleteStorageObjects = command(deleteStorageObjectsSchema, async (d
   }
 
   getStorageObjects().refresh();
+
+  return { success: true } as APIResponse;
 });
 
 export const getStorageFile = command(getStorageFileSchema, async (data) => {
   const event = getRequestEvent();
   const token = await api.auth.fetchToken(event);
 
-  const fileInfo = await api.postgrest.getFirst({
-    endpoint: GET_STORAGE_FILE,
-    token: token,
-    schema: storageObjectSchema,
-    params: {
-      p_org_class_id: data.p_org_class_id,
-      p_path: data.p_path,
-      p_name: data.p_name,
-    },
-  });
+  let fileInfo;
+  try {
+    fileInfo = await api.postgrest.getFirst({
+      endpoint: GET_STORAGE_FILE,
+      token: token,
+      schema: storageObjectSchema,
+      params: { p_org_class_id: data.p_org_class_id, p_path: data.p_path, p_name: data.p_name },
+    });
+  } catch (err) {
+    return errorToObject(err);
+  }
   if (!fileInfo) {
-    throw error(404, 'File not found');
+    return { success: false, message: 'File not found' } as APIResponse;
   }
 
   const objectPath = getS3Path(data.p_org_class_id, data.p_path, data.p_name, 'file');
@@ -201,5 +208,10 @@ export const getStorageFile = command(getStorageFileSchema, async (data) => {
     dayjs.duration({ hours: 1 }).asSeconds(),
   );
 
-  return link;
+  return {
+    success: true,
+    data: {
+      link,
+    },
+  } as APIResponse<{ link: string }>;
 });

@@ -6,16 +6,15 @@ import * as v from 'valibot';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
-	if (!event.locals.session) {
-		return redirect(302, '/');
-	}
+  if (!event.locals.session) {
+    return redirect(302, '/');
+  }
 
-	const token = await api.auth.fetchToken(event);
-	const orgs = await api.postgrest.get({
-		endpoint: GET_ORGANIZATIONS,
-		token: token,
-		schema: v.array(organizationSchema),
-	});
-
-	return { orgs };
+  const token = await api.auth.fetchToken(event);
+  const orgs = await api.postgrest.get({
+    endpoint: GET_ORGANIZATIONS,
+    token: token,
+    schema: v.array(organizationSchema),
+  });
+  return { orgs };
 };

@@ -1,8 +1,9 @@
 import { form, getRequestEvent } from '$app/server';
 import * as api from '$lib/server';
 import { CREATE_ORGANIZATION, DELETE_ORGANIZATION } from '$lib/server/postgrest/endpoints';
-import { PostgrestClientError } from '@wke-baas/postgrest-client';
+import { errorToObject } from '$lib/utils';
 import { createOrganizationSchema, deleteOrganizationSchema } from '../schemas';
+import type { APIResponse } from './types';
 
 export const createOrganization = form(createOrganizationSchema, async (data) => {
   const event = getRequestEvent();
@@ -14,39 +15,26 @@ export const createOrganization = form(createOrganizationSchema, async (data) =>
       token: token,
       data: data,
     });
-  } catch (error) {
-    if (error instanceof PostgrestClientError) {
-      return {
-        success: false,
-        message: error.message,
-        hint: error.hint,
-      };
-    }
-    throw error;
+  } catch (err) {
+    return errorToObject(err);
   }
 
-  return { success: true };
+  return { success: true } as APIResponse;
 });
 
 export const deleteOrganization = form(deleteOrganizationSchema, async (data) => {
   const event = getRequestEvent();
-  const token = await api.auth.fetchToken(event);
+
   try {
+    const token = await api.auth.fetchToken(event);
     await api.postgrest.post({
       endpoint: DELETE_ORGANIZATION,
       token: token,
       data: data,
     });
-  } catch (error) {
-    if (error instanceof PostgrestClientError) {
-      return {
-        success: false,
-        message: error.message,
-        hint: error.hint,
-      };
-    }
-    throw error;
+  } catch (err) {
+    return errorToObject(err);
   }
 
-  return { success: true };
+  return { success: true } as APIResponse;
 });

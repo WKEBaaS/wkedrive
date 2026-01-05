@@ -5,21 +5,26 @@
   import * as Field from '$lib/components/ui/field/index.js';
   import { Input } from '$lib/components/ui/input/index.js';
   import { createOrganization } from '$src/lib/remotes/index.js';
+  import { toastError } from '$src/lib/utils';
   import { toast } from 'svelte-sonner';
 </script>
 
 <div class='mx-4 space-y-4'>
 	<form
 		{...createOrganization.enhance(async ({ form, submit }) => {
-		  await submit();
-		  if (createOrganization.result?.success) {
-		    toast.success('Organization created successfully.');
-		    form.reset();
-		    goto(resolve(`/(dashboard)/dashboard/organizations`));
-		  } else {
-		    toast.error(createOrganization.result?.message || 'Failed to create organization.', {
-		      description: createOrganization.result?.hint || '',
-		    });
+		  try {
+		    await submit();
+		    if (createOrganization.result?.success) {
+		      toast.success('Organization created successfully.');
+		      form.reset();
+		      goto(resolve(`/(dashboard)/dashboard/organizations`));
+		    } else {
+		      toast.error(createOrganization.result?.message || 'Failed to create organization.', {
+		        description: createOrganization.result?.description,
+		      });
+		    }
+		  } catch (err) {
+		    toastError(err);
 		  }
 		})}
 		oninput={() => createOrganization.validate()}
